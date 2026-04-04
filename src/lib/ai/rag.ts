@@ -1,4 +1,4 @@
-import { supabase } from "../supabase/client";
+import { getSupabase } from "../supabase/client";
 import { generateEmbedding } from "./embeddings";
 import { getAi, CHAT_MODEL } from "./gemini";
 
@@ -10,6 +10,7 @@ export interface SearchResult {
 }
 
 export async function hybridSearch(query: string, limit = 5): Promise<SearchResult[]> {
+  const supabase = getSupabase();
   const embedding = await generateEmbedding(query);
 
   const { data, error } = await supabase.rpc("hybrid_search", {
