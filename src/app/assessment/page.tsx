@@ -1,5 +1,6 @@
 "use client";
 
+import type { SVGProps } from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, ChevronLeft, Timer, CheckCircle2, BarChart3, ArrowRight } from "lucide-react";
@@ -301,7 +302,7 @@ export default function DiagnosticAssessment() {
   return null;
 }
 
-function Sparkles(props: React.SVGProps<SVGSVGElement>) {
+function Sparkles(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
