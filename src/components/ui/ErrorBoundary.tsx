@@ -12,7 +12,7 @@ interface State {
   error?: Error;
 }
 
-class ErrorBoundary extends Component<props, state=""> {
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false
   };
@@ -28,19 +28,20 @@ class ErrorBoundary extends Component<props, state=""> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div classname="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div classname="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
-            <div classname="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <alerttriangle classname="h-8 w-8 text-red-600"/>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
+            <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
-            <h2 classname="text-2xl font-bold text-slate-900 mb-2">Đã có lỗi xảy ra</h2>
-            <p classname="text-slate-600 mb-8 text-sm">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Đã có lỗi xảy ra</h2>
+            <p className="text-slate-600 mb-8 text-sm">
               Rất tiếc, hệ thống gặp một chút trục trặc. Bạn hãy thử tải lại trang nhé!
             </p>
-            <button onclick="{()" ==""> window.location.reload()}
+            <button
+              onClick={() => window.location.reload()}
               className="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
             >
-              <refreshccw classname="h-4 w-4"/> Tải lại trang
+              <RefreshCcw className="h-4 w-4" /> Tải lại trang
             </button>
           </div>
         </div>

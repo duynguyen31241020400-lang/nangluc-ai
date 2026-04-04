@@ -1,6 +1,6 @@
 import { supabase } from "../supabase/client";
 import { generateEmbedding } from "./embeddings";
-import { ai, CHAT_MODEL } from "./gemini";
+import { getAi, CHAT_MODEL } from "./gemini";
 
 export interface SearchResult {
   id: string;
@@ -9,7 +9,7 @@ export interface SearchResult {
   similarity: number;
 }
 
-export async function hybridSearch(query: string, limit = 5): Promise<searchresult[]> {
+export async function hybridSearch(query: string, limit = 5): Promise<SearchResult[]> {
   const embedding = await generateEmbedding(query);
 
   const { data, error } = await supabase.rpc("hybrid_search", {
@@ -29,6 +29,7 @@ export async function hybridSearch(query: string, limit = 5): Promise<searchresu
 
 export async function generateTutorResponse(userMessage: string, context: SearchResult[]) {
   const contextText = context.map((r) => r.content).join("\n\n");
+  const ai = getAi();
 
   const systemInstruction = `
 Bạn là AI Tutor "Năng Lực" – chuyên gia giáo dục Việt Nam theo khung SELF (Scaffolding, Formative Feedback, Productive Struggle, Self-Regulation).

@@ -10,7 +10,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 export default function DiagnosticAssessment() {
   const [step, setStep] = useState<"intro" | "test" | "result">("intro");
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
-  const [answers, setAnswers] = useState<record<string, string="">>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(1200); // 20 minutes
   const [results, setResults] = useState<any>(null);
 
@@ -49,8 +49,8 @@ export default function DiagnosticAssessment() {
 
   const handleSubmit = () => {
     // Calculate mastery levels
-    const competencyScores: Record<string, {="" correct:="" number;="" total:="" number="" }=""> = {};
-    
+    const competencyScores: Record<string, { correct: number; total: number }> = {};
+
     DIAGNOSTIC_QUESTIONS.forEach((q) => {
       if (!competencyScores[q.competencyId]) {
         competencyScores[q.competencyId] = { correct: 0, total: 0 };
@@ -76,29 +76,34 @@ export default function DiagnosticAssessment() {
 
   if (step === "intro") {
     return (
-      <div classname="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <motion.div initial="{{" opacity:="" 0,="" scale:="" 0.9="" }}="" animate="{{" opacity:="" 1,="" scale:="" 1="" }}="" classname="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
-          <div classname="h-20 w-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <barchart3 classname="h-10 w-10 text-blue-600"/>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100"
+        >
+          <div className="h-20 w-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <BarChart3 className="h-10 w-10 text-blue-600" />
           </div>
-          <h1 classname="text-3xl font-bold text-slate-900 mb-4">Đánh giá Năng lực Đầu vào</h1>
-          <p classname="text-slate-600 mb-8 leading-relaxed">
+          <h1 className="text-3xl font-bold text-slate-900 mb-4">Đánh giá Năng lực Đầu vào</h1>
+          <p className="text-slate-600 mb-8 leading-relaxed">
             Chào Minh! Bài kiểm tra này giúp Năng Lực AI hiểu rõ trình độ hiện tại của bạn để xây dựng lộ trình học tập cá nhân hóa nhất. Đừng quá áp lực nhé!
           </p>
-          <div classname="grid grid-cols-2 gap-4 mb-8 text-left">
-            <div classname="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p classname="text-xs font-bold text-slate-400 uppercase mb-1">Số câu hỏi</p>
-              <p classname="text-lg font-bold text-slate-900">{DIAGNOSTIC_QUESTIONS.length} câu</p>
+          <div className="grid grid-cols-2 gap-4 mb-8 text-left">
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-xs font-bold text-slate-400 uppercase mb-1">Số câu hỏi</p>
+              <p className="text-lg font-bold text-slate-900">{DIAGNOSTIC_QUESTIONS.length} câu</p>
             </div>
-            <div classname="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p classname="text-xs font-bold text-slate-400 uppercase mb-1">Thời gian</p>
-              <p classname="text-lg font-bold text-slate-900">20 phút</p>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-xs font-bold text-slate-400 uppercase mb-1">Thời gian</p>
+              <p className="text-lg font-bold text-slate-900">20 phút</p>
             </div>
           </div>
-          <button onclick="{()" ==""> setStep("test")}
+          <button
+            onClick={() => setStep("test")}
             className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
           >
-            Bắt đầu Kiểm tra <chevronright classname="h-5 w-5"/>
+            Bắt đầu Kiểm tra <ChevronRight className="h-5 w-5" />
           </button>
         </motion.div>
       </div>
@@ -107,45 +112,60 @@ export default function DiagnosticAssessment() {
 
   if (step === "test") {
     return (
-      <div classname="min-h-screen bg-slate-50 p-4 sm:p-8">
-        <div classname="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div classname="flex items-center justify-between mb-6">
-            <div classname="flex items-center gap-3">
-              <div classname="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
                 {currentQuestionIdx + 1}
               </div>
               <div>
-                <p classname="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu hỏi</p>
-                <p classname="text-sm font-bold text-slate-900">{currentQuestionIdx + 1} / {DIAGNOSTIC_QUESTIONS.length}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu hỏi</p>
+                <p className="text-sm font-bold text-slate-900">{currentQuestionIdx + 1} / {DIAGNOSTIC_QUESTIONS.length}</p>
               </div>
             </div>
-            <div classname="{cn(" "flex="" items-center="" gap-2="" px-4="" py-2="" rounded-full="" font-mono="" font-bold="" text-sm",="" timeleft="" <="" 300="" ?="" "bg-red-100="" text-red-600="" animate-pulse"="" :="" "bg-white="" text-slate-600="" shadow-sm"="" )}="">
-              <timer classname="h-4 w-4"/>
+            <div className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full font-mono font-bold text-sm",
+              timeLeft < 300 ? "bg-red-100 text-red-600 animate-pulse" : "bg-white text-slate-600 shadow-sm"
+            )}>
+              <Timer className="h-4 w-4" />
               {formatTime(timeLeft)}
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div classname="h-2 w-full bg-slate-200 rounded-full mb-8 overflow-hidden">
-            <motion.div initial="{{" width:="" 0="" }}="" animate="{{" width:="" `${progress}%`="" }}="" classname="h-full bg-blue-600"/>
+          <div className="h-2 w-full bg-slate-200 rounded-full mb-8 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              className="h-full bg-blue-600"
+            />
           </div>
 
           {/* Question Card */}
-          <animatepresence mode="wait">
-            <motion.div key="{currentQuestion.id}" initial="{{" opacity:="" 0,="" x:="" 20="" }}="" animate="{{" opacity:="" 1,="" x:="" 0="" }}="" exit="{{" opacity:="" 0,="" x:="" -20="" }}="" classname="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 min-h-[400px] flex flex-col">
-              <div classname="flex-1">
-                <span classname="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase mb-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentQuestion.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 min-h-[400px] flex flex-col"
+            >
+              <div className="flex-1">
+                <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase mb-4">
                   {currentQuestion.competencyId}
                 </span>
-                <h2 classname="text-xl font-semibold text-slate-900 mb-8 leading-relaxed">
+                <h2 className="text-xl font-semibold text-slate-900 mb-8 leading-relaxed">
                   {currentQuestion.question}
                 </h2>
 
                 {currentQuestion.type === "multiple-choice" && (
-                  <div classname="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {currentQuestion.options?.map((option) => (
-                      <button key="{option}" onclick="{()" ==""> handleAnswer(currentQuestion.id, option)}
+                      <button
+                        key={option}
+                        onClick={() => handleAnswer(currentQuestion.id, option)}
                         className={cn(
                           "w-full text-left p-4 rounded-2xl border-2 transition-all",
                           answers[currentQuestion.id] === option
@@ -160,14 +180,19 @@ export default function DiagnosticAssessment() {
                 )}
 
                 {currentQuestion.type === "fill-in-the-blank" && (
-                  <input type="text" value="{answers[currentQuestion.id]" ||="" ""}="" onchange="{(e)" ==""> handleAnswer(currentQuestion.id, e.target.value)}
+                  <input
+                    type="text"
+                    value={answers[currentQuestion.id] || ""}
+                    onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
                     placeholder="Nhập câu trả lời của bạn..."
                     className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 outline-none transition-all text-lg"
                   />
                 )}
 
                 {currentQuestion.type === "short-essay" && (
-                  <textarea value="{answers[currentQuestion.id]" ||="" ""}="" onchange="{(e)" ==""> handleAnswer(currentQuestion.id, e.target.value)}
+                  <textarea
+                    value={answers[currentQuestion.id] || ""}
+                    onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
                     placeholder="Viết câu trả lời ngắn gọn..."
                     className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 outline-none transition-all text-lg min-h-[150px]"
                   />
@@ -187,7 +212,7 @@ export default function DiagnosticAssessment() {
                   onClick={nextQuestion}
                   className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
-                  {currentQuestionIdx === DIAGNOSTIC_QUESTIONS.length - 1 ? "Hoàn thành" : "Tiếp theo"} 
+                  {currentQuestionIdx === DIAGNOSTIC_QUESTIONS.length - 1 ? "Hoàn thành" : "Tiếp theo"}
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
@@ -201,7 +226,7 @@ export default function DiagnosticAssessment() {
   if (step === "result") {
     return (
       <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
@@ -241,7 +266,7 @@ export default function DiagnosticAssessment() {
                       <span className="text-sm font-bold text-blue-600">{Math.round(res.mastery)}%</span>
                     </div>
                     <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div 
+                      <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${res.mastery}%` }}
                         className="h-full bg-blue-600"
@@ -261,7 +286,7 @@ export default function DiagnosticAssessment() {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={() => window.location.href = "/learn/math"}
               className="mt-10 w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
             >
@@ -276,7 +301,7 @@ export default function DiagnosticAssessment() {
   return null;
 }
 
-function Sparkles(props: any) {
+function Sparkles(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
