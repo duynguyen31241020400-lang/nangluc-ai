@@ -1,0 +1,24 @@
+node_modules/
+build/
+dist/
+.next/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Large SQL seed files (not needed in repo)
+seed_knowledge*.sql
+seed_formatted_part*.sql
+
+# Utility scripts
+split_sql.*
+format_and_split.ps1
+count_records.ps1
+generate_seed.ts
+metadata.json
+
+# Vite leftovers (not used by Next.js)
+index.html
+vite.config.ts
