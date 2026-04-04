@@ -4,16 +4,22 @@ import type { SVGProps } from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, ChevronLeft, Timer, CheckCircle2, BarChart3, ArrowRight } from "lucide-react";
-import { DIAGNOSTIC_QUESTIONS, Question } from "@/src/lib/data/assessment";
+import { DIAGNOSTIC_QUESTIONS } from "@/src/lib/data/assessment";
 import { cn } from "@/src/lib/utils";
-import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
+
+interface MasteryResult {
+  subject: string;
+  mastery: number;
+  fullMark: number;
+}
 
 export default function DiagnosticAssessment() {
   const [step, setStep] = useState<"intro" | "test" | "result">("intro");
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(1200); // 20 minutes
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<MasteryResult[] | null>(null);
 
   useEffect(() => {
     if (step === "test" && timeLeft > 0) {
@@ -225,6 +231,10 @@ export default function DiagnosticAssessment() {
   }
 
   if (step === "result") {
+    if (!results) {
+      return null;
+    }
+
     return (
       <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
         <motion.div
@@ -260,7 +270,7 @@ export default function DiagnosticAssessment() {
 
               {/* Progress Bars */}
               <div className="space-y-6 text-left">
-                {results.map((res: any) => (
+                {results.map((res) => (
                   <div key={res.subject}>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-bold text-slate-700">{res.subject}</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CheckCircle2, Circle, Lock, Star } from "lucide-react";
+import { CheckCircle2, Lock, Star } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
 export interface CompetencyNode {

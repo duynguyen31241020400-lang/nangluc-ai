@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, User, Bot, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/src/lib/utils";
@@ -27,7 +27,7 @@ export default function TutorChat() {
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
