@@ -172,24 +172,33 @@ export default function AssessmentPage() {
                 {currentQuestion.competencyId.replace("_", " ")}
               </div>
               <h2 className="mt-4 text-2xl font-bold leading-tight text-balance">{currentQuestion.question}</h2>
-              <div className="mt-6 space-y-3">
+              <fieldset className="mt-6 space-y-3">
+                <legend className="sr-only">Chọn một đáp án</legend>
                 {currentQuestion.options.map((option) => {
                   const isActive = answers[currentQuestion.id] === option;
                   return (
-                    <button
-                      key={option}
-                      onClick={() => setAnswers((current) => ({ ...current, [currentQuestion.id]: option }))}
-                      className={`w-full rounded-2xl border px-5 py-4 text-left text-base transition ${
-                        isActive
-                          ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/50"
-                      }`}
-                    >
-                      {option}
-                    </button>
+                    <div key={option}>
+                      <label
+                        className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl border px-5 py-4 text-left text-base transition ${
+                          isActive
+                            ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/50"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={currentQuestion.id}
+                          value={option}
+                          checked={isActive}
+                          onChange={() => setAnswers((current) => ({ ...current, [currentQuestion.id]: option }))}
+                          className="mt-1 h-4 w-4 flex-none accent-blue-600"
+                        />
+                        <span className="flex-1 leading-7">{option}</span>
+                      </label>
+                    </div>
                   );
                 })}
-              </div>
+              </fieldset>
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
