@@ -1,5 +1,16 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { CompetencyId } from "@/src/lib/data/competition";
 import { generateTutorResponse, hybridSearch, type TutorMessage } from "@/src/lib/ai/rag";
+
+const VALID_COMPETENCY_IDS: CompetencyId[] = [
+  "set_basics",
+  "set_operations",
+  "quadratic_basics",
+];
+
+function isCompetencyId(value: string): value is CompetencyId {
+  return VALID_COMPETENCY_IDS.includes(value as CompetencyId);
+}
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +42,7 @@ export async function POST(request: Request) {
 
     const activeNode =
       payload.activeNode?.id &&
+      isCompetencyId(payload.activeNode.id) &&
       payload.activeNode.title &&
       payload.activeNode.shortLabel &&
       payload.activeNode.recommendedAction
