@@ -1,21 +1,17 @@
-"use client";
+﻿"use client";
 
-import { MessageSquare } from "lucide-react";
-import { motion } from "motion/react";
+import { MessageSquareText } from "lucide-react";
 
 export default function FeedbackButton() {
   return (
-    <motion.button
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      onClick={() => alert("Cảm ơn bạn! Hãy gửi góp ý cho chúng tôi qua email: feedback@nangluc.ai")}
-      className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all flex items-center justify-center group"
-      aria-label="Gửi phản hồi"
+    <button
+      type="button"
+      onClick={() => window.alert("Ghi chú nhanh cho team: kiểm tra demo script, checklist môi trường và ảnh sản phẩm trước khi rehearsal.")}
+      className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-2xl shadow-slate-300 transition hover:-translate-y-0.5"
+      aria-label="Nhắc demo checklist"
     >
-      <MessageSquare className="h-6 w-6" />
-      <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm font-bold whitespace-nowrap">
-        Góp ý
-      </span>
-    </motion.button>
+      <MessageSquareText className="h-4 w-4" />
+      Demo checklist
+    </button>
   );
 }

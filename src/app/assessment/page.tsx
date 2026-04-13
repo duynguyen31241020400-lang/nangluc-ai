@@ -1,336 +1,316 @@
-"use client";
+﻿"use client";
 
-import type { SVGProps } from "react";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, ChevronLeft, Timer, CheckCircle2, BarChart3, ArrowRight } from "lucide-react";
-import { DIAGNOSTIC_QUESTIONS } from "@/src/lib/data/assessment";
-import { cn } from "@/src/lib/utils";
-import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Sparkles, Target } from "lucide-react";
+import {
+  DIAGNOSTIC_QUESTIONS,
+  calculateAssessmentReport,
+  getMasteryLabel,
+} from "@/src/lib/data/competition";
+import { saveAssessmentReport } from "@/src/lib/demo-state";
 
-interface MasteryResult {
-  subject: string;
-  mastery: number;
-  fullMark: number;
-}
+const TEST_DURATION_SECONDS = 8 * 60;
 
-export default function DiagnosticAssessment() {
-  const [step, setStep] = useState<"intro" | "test" | "result">("intro");
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+type Step = "intro" | "test" | "result";
+
+export default function AssessmentPage() {
+  const router = useRouter();
+  const [step, setStep] = useState<Step>("intro");
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [timeLeft, setTimeLeft] = useState(1200); // 20 minutes
-  const [results, setResults] = useState<MasteryResult[] | null>(null);
+  const [timeLeft, setTimeLeft] = useState(TEST_DURATION_SECONDS);
+  const [report, setReport] = useState<ReturnType<typeof calculateAssessmentReport> | null>(null);
 
   useEffect(() => {
-    if (step === "test" && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && step === "test") {
+    if (step !== "test") {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setTimeLeft((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [step]);
+
+  useEffect(() => {
+    if (step === "test" && timeLeft === 0) {
       handleSubmit();
     }
   }, [step, timeLeft]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  const currentQuestion = DIAGNOSTIC_QUESTIONS[currentIndex];
+  const progress = ((currentIndex + 1) / DIAGNOSTIC_QUESTIONS.length) * 100;
+  const answeredCount = useMemo(
+    () => Object.values(answers).filter(Boolean).length,
+    [answers],
+  );
 
-  const handleAnswer = (questionId: string, answer: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-  };
+  function formatTime(totalSeconds: number) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
 
-  const nextQuestion = () => {
-    if (currentQuestionIdx < DIAGNOSTIC_QUESTIONS.length - 1) {
-      setCurrentQuestionIdx((prev) => prev + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-
-  const prevQuestion = () => {
-    if (currentQuestionIdx > 0) {
-      setCurrentQuestionIdx((prev) => prev - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    // Calculate mastery levels
-    const competencyScores: Record<string, { correct: number; total: number }> = {};
-
-    DIAGNOSTIC_QUESTIONS.forEach((q) => {
-      if (!competencyScores[q.competencyId]) {
-        competencyScores[q.competencyId] = { correct: 0, total: 0 };
-      }
-      competencyScores[q.competencyId].total += 1;
-      if (answers[q.id]?.toLowerCase().trim() === q.correctAnswer.toLowerCase().trim()) {
-        competencyScores[q.competencyId].correct += 1;
-      }
-    });
-
-    const masteryData = Object.entries(competencyScores).map(([id, score]) => ({
-      subject: id,
-      mastery: (score.correct / score.total) * 100,
-      fullMark: 100,
-    }));
-
-    setResults(masteryData);
+  function handleSubmit() {
+    const nextReport = calculateAssessmentReport(answers);
+    saveAssessmentReport(nextReport);
+    setReport(nextReport);
     setStep("result");
-  };
+  }
 
-  const currentQuestion = DIAGNOSTIC_QUESTIONS[currentQuestionIdx];
-  const progress = ((currentQuestionIdx + 1) / DIAGNOSTIC_QUESTIONS.length) * 100;
+  function startTest() {
+    setAnswers({});
+    setCurrentIndex(0);
+    setTimeLeft(TEST_DURATION_SECONDS);
+    setReport(null);
+    setStep("test");
+  }
+
+  function goToLearnPath() {
+    router.push("/learn/math");
+  }
 
   if (step === "intro") {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100"
-        >
-          <div className="h-20 w-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <BarChart3 className="h-10 w-10 text-blue-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">Đánh giá Năng lực Đầu vào</h1>
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            Chào Minh! Bài kiểm tra này giúp Năng Lực AI hiểu rõ trình độ hiện tại của bạn để xây dựng lộ trình học tập cá nhân hóa nhất. Đừng quá áp lực nhé!
-          </p>
-          <div className="grid grid-cols-2 gap-4 mb-8 text-left">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-xs font-bold text-slate-400 uppercase mb-1">Số câu hỏi</p>
-              <p className="text-lg font-bold text-slate-900">{DIAGNOSTIC_QUESTIONS.length} câu</p>
+      <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-blue-200">
+              <Sparkles className="h-4 w-4" />
+              Assessment 6 câu, 3 competency, 1 output cá nhân hóa
             </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-xs font-bold text-slate-400 uppercase mb-1">Thời gian</p>
-              <p className="text-lg font-bold text-slate-900">20 phút</p>
+            <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">
+              Bài chẩn đoán đầu vào của Lumiq AI
+            </h1>
+            <p className="mt-5 text-lg leading-8 text-slate-300">
+              Mục tiêu của demo không phải kiểm tra dài, mà là chỉ ra thật nhanh Minh đang yếu ở phần nào để chuyển ngay sang lộ trình học tập trung.
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              <InfoCard label="Số câu" value="6 câu" />
+              <InfoCard label="Competency" value="3 nhóm" />
+              <InfoCard label="Thời lượng" value="8 phút" />
             </div>
           </div>
-          <button
-            onClick={() => setStep("test")}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-          >
-            Bắt đầu Kiểm tra <ChevronRight className="h-5 w-5" />
-          </button>
-        </motion.div>
-      </div>
+
+          <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur">
+            <div className="rounded-[1.5rem] bg-white px-6 py-8 text-slate-900">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                  <Target className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-blue-700">Seeded learner</p>
+                  <h2 className="text-2xl font-bold">Minh - lớp 10</h2>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-3xl bg-slate-50 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Outcome</p>
+                <ul className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
+                  <li>Biết ngay competency yếu nhất.</li>
+                  <li>Nhận current goal để vào lộ trình học.</li>
+                  <li>Tutor sau đó trả lời theo đúng topic vừa được khuyến nghị.</li>
+                </ul>
+              </div>
+
+              <button
+                onClick={startTest}
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700"
+              >
+                Bắt đầu assessment
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
     );
   }
 
   if (step === "test") {
     return (
-      <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-                {currentQuestionIdx + 1}
-              </div>
+      <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex flex-col gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu hỏi</p>
-                <p className="text-sm font-bold text-slate-900">{currentQuestionIdx + 1} / {DIAGNOSTIC_QUESTIONS.length}</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Diagnostic flow</p>
+                <h1 className="mt-2 text-3xl font-black">Assessment của Minh</h1>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
+                <Clock3 className="h-4 w-4 text-blue-600" />
+                {formatTime(timeLeft)}
               </div>
             </div>
-            <div className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full font-mono font-bold text-sm",
-              timeLeft < 300 ? "bg-red-100 text-red-600 animate-pulse" : "bg-white text-slate-600 shadow-sm"
-            )}>
-              <Timer className="h-4 w-4" />
-              {formatTime(timeLeft)}
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div>
+                <div className="flex items-center justify-between text-sm text-slate-500">
+                  <span>Tiến độ</span>
+                  <span>{answeredCount}/{DIAGNOSTIC_QUESTIONS.length} câu đã trả lời</span>
+                </div>
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+              <div className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                Câu {currentIndex + 1}/{DIAGNOSTIC_QUESTIONS.length}
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-[1.75rem] border border-slate-100 bg-slate-50 p-6 sm:p-8">
+              <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 shadow-sm">
+                {currentQuestion.competencyId.replace("_", " ")}
+              </div>
+              <h2 className="mt-4 text-2xl font-bold leading-tight text-balance">{currentQuestion.question}</h2>
+              <div className="mt-6 space-y-3">
+                {currentQuestion.options.map((option) => {
+                  const isActive = answers[currentQuestion.id] === option;
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => setAnswers((current) => ({ ...current, [currentQuestion.id]: option }))}
+                      className={`w-full rounded-2xl border px-5 py-4 text-left text-base transition ${
+                        isActive
+                          ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/50"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                onClick={() => setCurrentIndex((current) => Math.max(current - 1, 0))}
+                disabled={currentIndex === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Quay lại
+              </button>
+
+              <button
+                onClick={() => {
+                  if (currentIndex === DIAGNOSTIC_QUESTIONS.length - 1) {
+                    handleSubmit();
+                    return;
+                  }
+
+                  setCurrentIndex((current) => Math.min(current + 1, DIAGNOSTIC_QUESTIONS.length - 1));
+                }}
+                disabled={!answers[currentQuestion.id]}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {currentIndex === DIAGNOSTIC_QUESTIONS.length - 1 ? "Xem kết quả" : "Tiếp theo"}
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
-
-          {/* Progress Bar */}
-          <div className="h-2 w-full bg-slate-200 rounded-full mb-8 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              className="h-full bg-blue-600"
-            />
-          </div>
-
-          {/* Question Card */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestion.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 min-h-[400px] flex flex-col"
-            >
-              <div className="flex-1">
-                <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase mb-4">
-                  {currentQuestion.competencyId}
-                </span>
-                <h2 className="text-xl font-semibold text-slate-900 mb-8 leading-relaxed">
-                  {currentQuestion.question}
-                </h2>
-
-                {currentQuestion.type === "multiple-choice" && (
-                  <div className="grid grid-cols-1 gap-4">
-                    {currentQuestion.options?.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => handleAnswer(currentQuestion.id, option)}
-                        className={cn(
-                          "w-full text-left p-4 rounded-2xl border-2 transition-all",
-                          answers[currentQuestion.id] === option
-                            ? "border-blue-600 bg-blue-50 text-blue-700 font-medium"
-                            : "border-slate-100 hover:border-blue-200 text-slate-600"
-                        )}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {currentQuestion.type === "fill-in-the-blank" && (
-                  <input
-                    type="text"
-                    value={answers[currentQuestion.id] || ""}
-                    onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
-                    placeholder="Nhập câu trả lời của bạn..."
-                    className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 outline-none transition-all text-lg"
-                  />
-                )}
-
-                {currentQuestion.type === "short-essay" && (
-                  <textarea
-                    value={answers[currentQuestion.id] || ""}
-                    onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
-                    placeholder="Viết câu trả lời ngắn gọn..."
-                    className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 outline-none transition-all text-lg min-h-[150px]"
-                  />
-                )}
-              </div>
-
-              {/* Navigation */}
-              <div className="mt-12 flex items-center justify-between">
-                <button
-                  onClick={prevQuestion}
-                  disabled={currentQuestionIdx === 0}
-                  className="flex items-center gap-2 text-slate-400 font-bold disabled:opacity-0 transition-all"
-                >
-                  <ChevronLeft className="h-5 w-5" /> Quay lại
-                </button>
-                <button
-                  onClick={nextQuestion}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2"
-                >
-                  {currentQuestionIdx === DIAGNOSTIC_QUESTIONS.length - 1 ? "Hoàn thành" : "Tiếp theo"}
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </div>
-            </motion.div>
-          </AnimatePresence>
         </div>
-      </div>
+      </main>
     );
   }
 
-  if (step === "result") {
-    if (!results) {
-      return null;
-    }
+  if (!report) {
+    return null;
+  }
 
-    return (
-      <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 text-center mb-8">
-            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Chúc mừng Minh!</h1>
-            <p className="text-slate-600 mb-8">Bạn đã hoàn thành bài đánh giá. Dưới đây là phân tích năng lực của bạn.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              {/* Radar Chart */}
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748b", fontSize: 10, fontWeight: "bold" }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar
-                      name="Mastery"
-                      dataKey="mastery"
-                      stroke="#2563eb"
-                      fill="#3b82f6"
-                      fillOpacity={0.6}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+  return (
+    <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+      <div className="mx-auto max-w-5xl space-y-8">
+        <div className="rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
+                Assessment completed
               </div>
-
-              {/* Progress Bars */}
-              <div className="space-y-6 text-left">
-                {results.map((res) => (
-                  <div key={res.subject}>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-bold text-slate-700">{res.subject}</span>
-                      <span className="text-sm font-bold text-blue-600">{Math.round(res.mastery)}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${res.mastery}%` }}
-                        className="h-full bg-blue-600"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h1 className="mt-4 text-4xl font-black tracking-tight">Kết quả của {report.learner.name}</h1>
+              <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">{report.summary}</p>
             </div>
-
-            <div className="mt-12 p-6 bg-blue-50 rounded-2xl border border-blue-100 text-left">
-              <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                <Sparkles className="h-5 w-5" /> Nhận xét từ AI Tutor
-              </h3>
-              <p className="text-blue-800 text-sm leading-relaxed">
-                Minh ơi, kết quả cho thấy bạn đang nắm khá vững phần **Tập hợp**, nhưng cần chú ý thêm về **Hàm số bậc hai**. Đừng lo, lộ trình của bạn đã được cập nhật để tập trung củng cố những phần này trước khi sang kiến thức mới!
-              </p>
-            </div>
-
             <button
-              onClick={() => window.location.href = "/learn/math"}
-              className="mt-10 w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+              onClick={goToLearnPath}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700"
             >
-              Vào Lộ trình Cá nhân hóa <ArrowRight className="h-5 w-5" />
+              Vào lộ trình cá nhân hóa
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
-        </motion.div>
-      </div>
-    );
-  }
 
-  return null;
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {report.results.map((result) => (
+              <div key={result.competencyId} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{result.code}</p>
+                    <h2 className="mt-2 text-xl font-bold text-slate-900">{result.title}</h2>
+                  </div>
+                  <div className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClasses(result.level)}`}>
+                    {getMasteryLabel(result.level)}
+                  </div>
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-full rounded-full bg-blue-600" style={{ width: `${result.score * 100}%` }} />
+                </div>
+                <p className="mt-3 text-sm text-slate-600">Đúng {result.correct}/{result.total} câu. {result.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+          <div className="rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-100">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">Current recommendation</p>
+            <h2 className="mt-3 text-3xl font-black text-balance">
+              Ưu tiên {report.results.find((item) => item.competencyId === report.recommendedCompetencyId)?.title.toLowerCase()} trước.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-blue-50">{report.coachNote}</p>
+          </div>
+
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Why this matters</p>
+            <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
+              <li>Minh không cần học lại cả chương mà chỉ tập trung một competency trước.</li>
+              <li>Current goal này sẽ được mang sang learning path để chứng minh có cá nhân hóa.</li>
+              <li>Tutor chat sẽ nhận đúng topic đang yếu thay vì trả lời chung chung.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }
 
-function Sparkles(props: SVGProps<SVGSVGElement>) {
+function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-      <path d="M5 3v4" />
-      <path d="M19 17v4" />
-      <path d="M3 5h4" />
-      <path d="M17 19h4" />
-    </svg>
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-white">{value}</p>
+    </div>
   );
+}
+
+function badgeClasses(level: "weak" | "average" | "strong") {
+  if (level === "weak") {
+    return "bg-rose-100 text-rose-700";
+  }
+
+  if (level === "average") {
+    return "bg-amber-100 text-amber-700";
+  }
+
+  return "bg-emerald-100 text-emerald-700";
 }

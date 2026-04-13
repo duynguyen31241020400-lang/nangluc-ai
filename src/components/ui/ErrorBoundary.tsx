@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 
 interface Props {
@@ -9,46 +9,46 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error?: Error;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  public static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error("Lumiq AI render error", error, errorInfo);
   }
 
   public render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
-            <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Đã có lỗi xảy ra</h2>
-            <p className="text-slate-600 mb-8 text-sm">
-              Rất tiếc, hệ thống gặp một chút trục trặc. Bạn hãy thử tải lại trang nhé!
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-            >
-              <RefreshCcw className="h-4 w-4" /> Tải lại trang
-            </button>
-          </div>
-        </div>
-      );
+    if (!this.state.hasError) {
+      return this.props.children;
     }
 
-    return this.props.children;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-10 text-slate-900">
+        <div className="max-w-lg rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-xl shadow-slate-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-700">
+            <AlertTriangle className="h-8 w-8" />
+          </div>
+          <h2 className="mt-6 text-3xl font-black">Prototype vừa gặp lỗi hiển thị</h2>
+          <p className="mt-3 text-base leading-7 text-slate-600">
+            Lumiq AI đang ở chế độ competition prototype, nên cách xử lý nhanh nhất là tải lại màn hình để quay về flow chính.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Tải lại prototype
+          </button>
+        </div>
+      </div>
+    );
   }
 }
 

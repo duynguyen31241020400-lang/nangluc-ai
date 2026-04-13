@@ -1,95 +1,98 @@
-"use client";
+﻿"use client";
 
-import { motion } from "motion/react";
-import { CheckCircle2, Lock, Star } from "lucide-react";
+import { CheckCircle2, LockOpen, Sparkles } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
 export interface CompetencyNode {
   id: string;
   code: string;
   title: string;
-  mastery: number; // 0 to 1
-  status: "locked" | "available" | "completed";
+  shortLabel: string;
+  mastery: number;
+  status: "completed" | "active" | "available";
+  description: string;
+  recommendedAction: string;
   isCurrentGoal?: boolean;
 }
 
 interface ProgressTreeProps {
   nodes: CompetencyNode[];
-  onNodeClick: (node: CompetencyNode) => void;
   activeNodeId?: string;
+  onNodeClick: (node: CompetencyNode) => void;
 }
 
-export default function ProgressTree({ nodes, onNodeClick, activeNodeId }: ProgressTreeProps) {
+export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: ProgressTreeProps) {
   return (
-    <div className="relative py-8 flex flex-col items-center gap-12">
-      {/* Connection Line */}
-      <div className="absolute top-0 bottom-0 w-1 bg-slate-200 left-1/2 -translate-x-1/2 z-0" />
+    <div className="space-y-5">
+      {nodes.map((node, index) => {
+        const isActiveCard = activeNodeId === node.id;
+        const masteryPercent = Math.round(node.mastery * 100);
 
-      {nodes.map((node, index) => (
-        <motion.div
-          key={node.id}
-          initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="relative z-10 flex flex-col items-center group"
-        >
-          {/* Node Circle */}
+        return (
           <button
-            onClick={() => node.status !== "locked" && onNodeClick(node)}
+            key={node.id}
+            onClick={() => onNodeClick(node)}
             className={cn(
-              "h-16 w-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg border-4",
-              node.status === "completed"
-                ? "bg-green-500 border-green-200 text-white"
-                : node.status === "available"
-                ? "bg-white border-blue-500 text-blue-600 hover:scale-110"
-                : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed",
-              activeNodeId === node.id && "ring-4 ring-blue-300 ring-offset-2 scale-110"
+              "group relative w-full rounded-[1.6rem] border p-5 text-left transition",
+              isActiveCard
+                ? "border-blue-300 bg-blue-50 shadow-lg shadow-blue-100"
+                : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40",
             )}
           >
-            {node.status === "completed" ? (
-              <CheckCircle2 className="h-8 w-8" />
-            ) : node.status === "locked" ? (
-              <Lock className="h-6 w-6" />
-            ) : (
-              <Star className={cn("h-8 w-8", node.isCurrentGoal && "animate-pulse")} />
-            )}
-          </button>
+            {index !== nodes.length - 1 ? (
+              <span className="absolute left-8 top-[calc(100%+0.25rem)] h-6 w-px bg-slate-200" />
+            ) : null}
 
-          {/* Label */}
-          <div className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-48 px-4 py-2 rounded-xl bg-white shadow-sm border border-slate-100 transition-all",
-            index % 2 === 0 ? "right-20 text-right" : "left-20 text-left",
-            node.status === "locked" ? "opacity-50" : "group-hover:shadow-md"
-          )}>
-            <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">{node.code}</p>
-            <h4 className="text-sm font-semibold text-slate-800 leading-tight">{node.title}</h4>
-            {node.status === "completed" && (
-              <p className="text-[10px] text-green-600 font-medium mt-1">Đã làm chủ 100%</p>
-            )}
-            {node.status === "available" && (
-              <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${node.mastery * 100}%` }}
-                  className="h-full bg-blue-500"
-                />
+            <div className="flex items-start gap-4">
+              <div
+                className={cn(
+                  "mt-1 flex h-12 w-12 items-center justify-center rounded-2xl border text-sm font-bold",
+                  node.status === "completed" && "border-emerald-200 bg-emerald-50 text-emerald-700",
+                  node.status === "active" && "border-blue-200 bg-blue-600 text-white",
+                  node.status === "available" && "border-slate-200 bg-slate-50 text-slate-600",
+                )}
+              >
+                {node.status === "completed" ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : node.status === "active" ? (
+                  <Sparkles className="h-5 w-5" />
+                ) : (
+                  <LockOpen className="h-5 w-5" />
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Dopamine Feedback for Current Goal */}
-          {node.isCurrentGoal && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="absolute -top-2 -right-2 bg-yellow-400 text-white p-1 rounded-full shadow-sm"
-            >
-              <Star className="h-3 w-3 fill-current" />
-            </motion.div>
-          )}
-        </motion.div>
-      ))}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{node.code}</p>
+                    <h3 className="mt-1 text-xl font-bold text-slate-900">{node.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{node.description}</p>
+                  </div>
+                  <div className={cn(
+                    "inline-flex rounded-full px-3 py-1 text-xs font-semibold",
+                    node.status === "completed" && "bg-emerald-100 text-emerald-700",
+                    node.status === "active" && "bg-blue-100 text-blue-700",
+                    node.status === "available" && "bg-slate-100 text-slate-600",
+                  )}>
+                    {node.isCurrentGoal ? "Current goal" : node.status === "completed" ? "Đã vững" : "Tiếp theo"}
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    <span>Mastery</span>
+                    <span>{masteryPercent}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${masteryPercent}%` }} />
+                  </div>
+                  <p className="text-sm text-slate-500">{node.recommendedAction}</p>
+                </div>
+              </div>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

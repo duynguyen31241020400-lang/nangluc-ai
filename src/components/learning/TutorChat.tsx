@@ -1,140 +1,199 @@
-"use client";
+﻿"use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Send, User, Bot, Loader2, Sparkles } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Bot, Loader2, Send, Sparkles, User } from "lucide-react";
+import type { LearningNode } from "@/src/lib/data/competition";
 import { cn } from "@/src/lib/utils";
+
+interface LearnerContext {
+  learnerName: string;
+  learnerGrade: string;
+  learnerTarget: string;
+  shortGoal: string;
+  weakArea: string;
+  activeTopic: string;
+  recommendedAction: string;
+}
 
 interface Message {
   role: "user" | "tutor";
   content: string;
 }
 
-export default function TutorChat() {
+interface TutorChatProps {
+  activeNode: LearningNode;
+  learnerContext: LearnerContext;
+}
+
+function buildGreeting(context: LearnerContext) {
+  return `Chào ${context.learnerName}! Hiện tại mình đang bám vào ${context.activeTopic.toLowerCase()} vì đây là chỗ Minh cần ưu tiên nhất. Mục tiêu ngắn hạn là: ${context.shortGoal}`;
+}
+
+function buildFocusNudge(context: LearnerContext, node: LearningNode) {
+  return `Đã chuyển sang ${node.title.toLowerCase()}. Mình sẽ giữ câu trả lời bám đúng topic này và nhắc Minh tập trung vào: ${context.recommendedAction}`;
+}
+
+export default function TutorChat({ activeNode, learnerContext }: TutorChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "tutor",
-      content: "Chào Minh! Hôm nay chúng ta sẽ cùng nhau chinh phục môn Toán lớp 10 nhé. Bạn đang gặp khó khăn ở phần nào hay muốn bắt đầu với mục tiêu gì nào?",
+      content: buildGreeting(learnerContext),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const previousNodeId = useRef(activeNode.id);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (!scrollRef.current) {
+      return;
     }
+
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  useEffect(() => {
+    if (previousNodeId.current === activeNode.id) {
+      return;
+    }
 
-    const userMessage = input.trim();
+    previousNodeId.current = activeNode.id;
+    setMessages((current) => [
+      ...current,
+      {
+        role: "tutor",
+        content: buildFocusNudge(learnerContext, activeNode),
+      },
+    ]);
+  }, [activeNode, learnerContext]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) {
+      return;
+    }
+
+    const nextHistory = [...messages, { role: "user" as const, content: trimmed }];
+    setMessages(nextHistory);
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: trimmed,
+          history: nextHistory.slice(-6),
+          activeNode,
+          learnerContext,
+        }),
       });
 
       const data = await response.json();
-      if (data.response) {
-        setMessages((prev) => [...prev, { role: "tutor", content: data.response }]);
-      }
+      setMessages((current) => [
+        ...current,
+        {
+          role: "tutor",
+          content: data.response ?? "Mình vừa mất kết nối ngắn, nhưng vẫn đang bám vào đúng topic của Minh.",
+        },
+      ]);
     } catch (error) {
-      console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { role: "tutor", content: "Rất tiếc, hệ thống đang bận một chút. Bạn thử lại sau nhé!" },
+      console.error("Tutor chat error", error);
+      setMessages((current) => [
+        ...current,
+        {
+          role: "tutor",
+          content: `Mình chưa lấy được phản hồi từ API nên tạm nhắc Minh tập trung vào ${activeNode.shortLabel.toLowerCase()} trước nhé.`,
+        },
       ]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
-      {/* Header */}
-      <div className="bg-blue-600 p-4 flex items-center gap-3">
-        <div className="bg-white/20 p-2 rounded-lg">
-          <Sparkles className="h-5 w-5 text-white" />
+    <section className="flex h-full min-h-[38rem] flex-col rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-blue-700">AI Tutor</p>
+            <h2 className="text-lg font-bold text-slate-900">Đang bám topic: {activeNode.shortLabel}</h2>
+          </div>
         </div>
-        <div>
-          <h2 className="text-white font-semibold leading-none">AI Tutor Năng Lực</h2>
-          <p className="text-blue-100 text-xs mt-1">Đang hỗ trợ: Minh (Lớp 10)</p>
+        <div className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+          {learnerContext.learnerName} - {learnerContext.learnerGrade}
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth bg-slate-50/50">
-        <AnimatePresence initial={false}>
-          {messages.map((msg, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+      <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm text-slate-600">
+        Điểm yếu hiện tại: <span className="font-semibold text-slate-900">{learnerContext.weakArea}</span>. Mục tiêu: <span className="font-semibold text-slate-900">{learnerContext.learnerTarget}</span>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+        {messages.map((message, index) => (
+          <div
+            key={`${message.role}-${index}`}
+            className={cn(
+              "flex items-start gap-3",
+              message.role === "user" && "justify-end",
+            )}
+          >
+            {message.role === "tutor" ? (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                <Bot className="h-4 w-4" />
+              </div>
+            ) : null}
+            <div
               className={cn(
-                "flex items-start gap-3 max-w-[85%]",
-                msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
+                "max-w-[82%] rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm",
+                message.role === "tutor"
+                  ? "rounded-tl-md border border-slate-200 bg-slate-50 text-slate-700"
+                  : "rounded-tr-md bg-blue-600 text-white",
               )}
             >
-              <div className={cn(
-                "p-2 rounded-full flex-shrink-0",
-                msg.role === "user" ? "bg-blue-100" : "bg-white border border-slate-200 shadow-sm"
-              )}>
-                {msg.role === "user" ? (
-                  <User className="h-4 w-4 text-blue-600" />
-                ) : (
-                  <Bot className="h-4 w-4 text-blue-600" />
-                )}
+              {message.content}
+            </div>
+            {message.role === "user" ? (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                <User className="h-4 w-4" />
               </div>
-              <div className={cn(
-                "p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap",
-                msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-tr-none shadow-md"
-                  : "bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-sm"
-              )}>
-                {msg.content}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 text-slate-400 text-xs ml-12"
-          >
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Năng Lực đang suy nghĩ...
-          </motion.div>
-        )}
+            ) : null}
+          </div>
+        ))}
+
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Lumiq AI đang dựng gợi ý tiếp theo cho Minh...
+          </div>
+        ) : null}
       </div>
 
-      {/* Input Area */}
-      <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-slate-100 flex gap-2 items-center">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Nhập câu hỏi hoặc bài tập của bạn..."
-          className="flex-1 bg-slate-50 border-none rounded-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors shadow-lg"
-        >
-          <Send className="h-5 w-5" />
-        </button>
+      <form onSubmit={handleSubmit} className="border-t border-slate-100 p-4">
+        <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-inner">
+          <input
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder={`Hỏi về ${activeNode.shortLabel.toLowerCase()} hoặc nhờ tutor gợi ý bước tiếp theo...`}
+            className="h-11 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </form>
-    </div>
+    </section>
   );
 }

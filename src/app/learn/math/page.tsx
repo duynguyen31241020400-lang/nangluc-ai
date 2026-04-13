@@ -1,129 +1,200 @@
-"use client";
+﻿"use client";
 
-import type { SVGProps } from "react";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, BrainCircuit, CheckCircle2, Flame, Target } from "lucide-react";
+import ProgressTree, { type CompetencyNode } from "@/src/components/learning/ProgressTree";
 import TutorChat from "@/src/components/learning/TutorChat";
-import ProgressTree, { CompetencyNode } from "@/src/components/learning/ProgressTree";
-import { Trophy, Target, Flame } from "lucide-react";
+import {
+  DEMO_SCENARIOS,
+  type AssessmentReport,
+  type DemoScenarioId,
+  buildLearnerContext,
+  buildLearningNodes,
+  getMasteryLabel,
+} from "@/src/lib/data/competition";
+import { getOrCreateDemoReport, loadScenarioReport } from "@/src/lib/demo-state";
 
-// Mock data for Phase 4 (Will be replaced by Supabase fetch)
-const MOCK_NODES: CompetencyNode[] = [
-  { id: "1", code: "TOAN10.1", title: "Khái niệm Tập hợp", mastery: 1, status: "completed" },
-  { id: "2", code: "TOAN10.2", title: "Các phép toán Tập hợp", mastery: 0.7, status: "available", isCurrentGoal: true },
-  { id: "3", code: "TOAN10.3", title: "Bất phương trình bậc nhất", mastery: 0, status: "available" },
-  { id: "4", code: "TOAN10.4", title: "Hệ bất phương trình", mastery: 0, status: "locked" },
-  { id: "5", code: "TOAN10.5", title: "Hàm số bậc hai", mastery: 0, status: "locked" },
-];
+export default function LearnMathPage() {
+  const [report, setReport] = useState<AssessmentReport | null>(null);
+  const [activeNode, setActiveNode] = useState<CompetencyNode | null>(null);
 
-export default function LearnPage() {
-  const [activeNode, setActiveNode] = useState<CompetencyNode>(MOCK_NODES[1]);
+  useEffect(() => {
+    const initialReport = getOrCreateDemoReport();
+    const initialNodes = buildLearningNodes(initialReport) as CompetencyNode[];
+    setReport(initialReport);
+    setActiveNode(initialNodes[0]);
+  }, []);
+
+  const nodes = useMemo(() => {
+    if (!report) {
+      return [] as CompetencyNode[];
+    }
+
+    return buildLearningNodes(report) as CompetencyNode[];
+  }, [report]);
+
+  useEffect(() => {
+    if (!nodes.length) {
+      return;
+    }
+
+    setActiveNode((current) => {
+      if (!current) {
+        return nodes[0];
+      }
+
+      return nodes.find((item) => item.id === current.id) ?? nodes[0];
+    });
+  }, [nodes]);
+
+  if (!report || !activeNode) {
+    return null;
+  }
+
+  const learnerContext = buildLearnerContext(report, activeNode);
+  const recommended = report.results.find((item) => item.competencyId === report.recommendedCompetencyId);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-inner">
-              M
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">Chào Minh!</h1>
-              <p className="text-slate-500 text-xs flex items-center gap-1">
-                <Flame className="h-3 w-3 text-orange-500 fill-orange-500" />
-                Chuỗi 5 ngày học tập
-              </p>
-            </div>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_42%,#f8fafc_100%)] px-6 py-8 text-slate-900">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-blue-700">
+              <ArrowLeft className="h-4 w-4" />
+              Quay lại landing
+            </Link>
+            <h1 className="mt-3 text-4xl font-black tracking-tight">Lộ trình cá nhân hóa của {report.learner.name}</h1>
+            <p className="mt-3 max-w-3xl text-lg leading-8 text-slate-600">
+              Đây là bản demo hẹp nhưng thật của Lumiq AI: assessment vừa chạy xong được chuyển thành current goal rõ ràng, và tutor sẽ bám vào đúng điểm yếu đó.
+            </p>
           </div>
-
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex flex-col items-end">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Năng lực hiện tại</span>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-32 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 w-[15%]" />
-                </div>
-                <span className="text-sm font-bold text-slate-900">15%</span>
-              </div>
-            </div>
-            <div className="bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-100 flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-600" />
-              <span className="text-xs font-bold text-yellow-700">1,250 XP</span>
-            </div>
+          <div className="rounded-[1.75rem] border border-blue-100 bg-white/90 p-4 shadow-sm backdrop-blur">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Prototype guardrail</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Chỉ demo 1 learner archetype, 1 môn Toán, và 2 trạng thái personalized output đủ để chứng minh có cá nhân hóa.
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Progress Tree */}
-          <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-600" />
-                  Lộ trình Năng lực
-                </h2>
-                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold uppercase">Toán 10</span>
-              </div>
-              <div className="p-4 max-h-[600px] overflow-y-auto custom-scrollbar">
-                <ProgressTree nodes={MOCK_NODES} onNodeClick={setActiveNode} activeNodeId={activeNode.id} />
-              </div>
-            </div>
-
-            {/* Short-term Win Card */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
-              <div className="relative z-10">
-                <h3 className="font-bold text-lg mb-1">Mục tiêu ngắn hạn</h3>
-                <p className="text-blue-100 text-sm mb-4">Hoàn thành &quot;Các phép toán Tập hợp&quot; để đạt 5/10 điểm giữa kỳ!</p>
-                <div className="bg-white/20 h-2 w-full rounded-full overflow-hidden">
-                  <div className="h-full bg-white w-[70%]" />
+        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.1fr_1.05fr]">
+          <section className="space-y-6">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-blue-700">Seeded learner</p>
+                  <h2 className="mt-1 text-2xl font-bold text-slate-900">{report.learner.name} - {report.learner.grade}</h2>
                 </div>
-                <p className="text-[10px] mt-2 text-blue-200 font-medium">Còn 3 bài tập nữa thôi, cố lên!</p>
+                <div className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                  <Flame className="mr-1 inline h-3.5 w-3.5" /> 5-day streak
+                </div>
               </div>
-              <StarIcon className="absolute -right-4 -bottom-4 h-32 w-32 text-white/10 rotate-12" />
-            </div>
-          </div>
 
-          {/* Right Column: AI Tutor Chat */}
-          <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-            <div className="bg-white p-4 rounded-t-3xl border-x border-t border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Target className="h-6 w-6 text-blue-600" />
+              <div className="mt-5 space-y-4 rounded-[1.5rem] bg-slate-50 p-5 text-sm text-slate-600">
+                <div>
+                  <p className="font-semibold text-slate-900">Mục tiêu học tập</p>
+                  <p className="mt-1 leading-6">{report.learner.target}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">{activeNode.title}</h3>
-                  <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{activeNode.code}</p>
+                  <p className="font-semibold text-slate-900">Nhu cầu chính</p>
+                  <p className="mt-1 leading-6">{report.learner.primaryNeed}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
-                  {activeNode.status === "completed" ? "Đã hoàn thành" : "Đang học"}
-                </span>
+                <Target className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-bold">Đổi trạng thái personalized output</h2>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Hai kịch bản dưới đây giúp team rehearsal nhanh và chứng minh rõ current goal đổi theo kết quả assessment.
+              </p>
+              <div className="mt-4 space-y-3">
+                {DEMO_SCENARIOS.map((scenario) => {
+                  const isActive = report.demoScenarioId === scenario.id;
+                  return (
+                    <button
+                      key={scenario.id}
+                      onClick={() => switchScenario(scenario.id, setReport, setActiveNode)}
+                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                        isActive
+                          ? "border-blue-300 bg-blue-50 text-blue-700"
+                          : "border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-200 hover:bg-blue-50/60"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">{scenario.title}</p>
+                      <p className="mt-1 text-sm leading-6">{scenario.description}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <TutorChat />
-          </div>
+
+            <div className="rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white shadow-xl shadow-blue-100">
+              <div className="flex items-center gap-2 text-blue-100">
+                <CheckCircle2 className="h-5 w-5" />
+                Current recommendation
+              </div>
+              <h2 className="mt-3 text-3xl font-black text-balance">Ưu tiên {recommended?.title.toLowerCase()} trước.</h2>
+              <p className="mt-4 text-sm leading-7 text-blue-50">{report.coachNote}</p>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-bold">Progress tree theo kết quả assessment</h2>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Current goal sẽ nhảy theo competency yếu nhất. Đây là chỗ quan trọng nhất để demo cho giám khảo thấy personalization thực sự tồn tại.
+              </p>
+              <div className="mt-6">
+                <ProgressTree
+                  nodes={nodes}
+                  activeNodeId={activeNode.id}
+                  onNodeClick={setActiveNode}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Active focus</p>
+              <h2 className="mt-2 text-2xl font-black text-slate-900">{activeNode.title}</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <MetricCard label="Mastery hiện tại" value={`${Math.round(activeNode.mastery * 100)}%`} helper={recommended?.title === activeNode.title ? "Đây là competency đang được ưu tiên." : "Đã có nền tương đối ổn hơn."} />
+                <MetricCard label="Mức đánh giá" value={getMasteryLabel(report.results.find((item) => item.competencyId === activeNode.id)?.level ?? "average")} helper={activeNode.recommendedAction} />
+              </div>
+            </div>
+
+            <TutorChat activeNode={activeNode} learnerContext={learnerContext} />
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
-function StarIcon(props: SVGProps<SVGSVGElement>) {
+function switchScenario(
+  id: DemoScenarioId,
+  setReport: Dispatch<SetStateAction<AssessmentReport | null>>,
+  setActiveNode: Dispatch<SetStateAction<CompetencyNode | null>>,
+) {
+  const nextReport = loadScenarioReport(id);
+  const nextNodes = buildLearningNodes(nextReport) as CompetencyNode[];
+  setReport(nextReport);
+  setActiveNode(nextNodes[0]);
+}
+
+function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
+    <div className="rounded-[1.5rem] bg-slate-50 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{label}</p>
+      <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{helper}</p>
+    </div>
   );
 }

@@ -1,79 +1,113 @@
-"use client";
+﻿"use client";
 
-import type { ReactNode } from "react";
-import { motion } from "motion/react";
-import { BookOpen, GraduationCap, Target, Zap } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, BrainCircuit, Sparkles, Target } from "lucide-react";
 
-export default function Home() {
+const featureCards = [
+  {
+    title: "Đánh giá nhanh, đúng chỗ",
+    description: "Assessment 6 câu giúp học sinh biết mình yếu đúng competency nào thay vì học lại cả chương.",
+    icon: Target,
+  },
+  {
+    title: "Lộ trình tập trung",
+    description: "Sau khi chẩn đoán, Lumiq AI đẩy current goal rõ ràng để người học biết hôm nay cần làm gì trước.",
+    icon: CheckCircle2,
+  },
+  {
+    title: "Tutor theo ngữ cảnh",
+    description: "Tutor phản hồi dựa trên topic đang học, điểm yếu hiện tại và mục tiêu ngắn hạn của Minh.",
+    icon: BrainCircuit,
+  },
+];
+
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
-              Năng Lực <span className="text-blue-600">AI</span>
-            </h1>
-            <p className="mt-6 text-xl leading-8 text-slate-600 max-w-2xl mx-auto">
-              Học tập thích ứng biết mục tiêu của bạn là gì, dạy bạn đủ để giành chiến thắng và xây dựng kiến thức để bạn làm chủ.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="/assessment"
-                className="rounded-full bg-blue-600 px-8 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all"
-              >
-                Bắt đầu ngay
-              </a>
-              <button className="text-sm font-semibold leading-6 text-slate-900 flex items-center gap-1">
-                Tìm hiểu thêm <span aria-hidden="true">→</span>
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe,transparent_38%),linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-900">
+      <section className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center gap-12 px-6 py-16 lg:flex-row lg:items-center lg:gap-16">
+        <div className="max-w-3xl flex-1">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm backdrop-blur">
+            <Sparkles className="h-4 w-4" />
+            Competition prototype for IU Startup Demo Day 2026
+          </div>
 
-      {/* Features */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
-            <FeatureCard
-              icon={<Target className="h-6 w-6 text-blue-600" />}
-              title="Cá nhân hóa"
-              description="Lộ trình học tập dựa trên năng lực thực tế của bạn."
-            />
-            <FeatureCard
-              icon={<Zap className="h-6 w-6 text-blue-600" />}
-              title="Phản hồi tức thì"
-              description="AI Tutor hỗ trợ giải đáp và gợi ý ngay khi bạn gặp khó khăn."
-            />
-            <FeatureCard
-              icon={<BookOpen className="h-6 w-6 text-blue-600" />}
-              title="Chuẩn GDPT 2018"
-              description="Nội dung bám sát khung năng lực giáo dục phổ thông mới nhất."
-            />
-            <FeatureCard
-              icon={<GraduationCap className="h-6 w-6 text-blue-600" />}
-              title="Mục tiêu ngắn hạn"
-              description="Chia nhỏ kiến thức giúp bạn đạt được những chiến thắng nhỏ mỗi ngày."
-            />
+          <h1 className="mt-6 text-5xl font-black tracking-tight text-balance sm:text-6xl lg:text-7xl">
+            Lumiq AI giúp học sinh lớp 10 biết mình yếu gì và học đúng chỗ.
+          </h1>
+
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
+            Prototype này tập trung vào một flow rất hẹp nhưng đủ thuyết phục cho vòng thi:
+            đánh giá đầu vào, gợi ý lộ trình Toán cá nhân hóa và tutor phản hồi theo đúng ngữ cảnh học của Minh.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <Link
+              href="/assessment"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-7 py-4 text-base font-semibold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700"
+            >
+              Bắt đầu demo flow
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/learn/math"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-4 text-base font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+            >
+              Xem thẳng personalized path
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First user</p>
+              <p className="mt-2 text-lg font-bold">Học sinh lớp 10 yếu Toán</p>
+            </div>
+            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First value</p>
+              <p className="mt-2 text-lg font-bold">Biết đúng điểm yếu để học tập trung</p>
+            </div>
+            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Demo promise</p>
+              <p className="mt-2 text-lg font-bold">Ít nhưng thật và mượt</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 p-5 text-white shadow-2xl shadow-blue-200">
+            <div className="rounded-[1.6rem] bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">Demo journey</p>
+                  <h2 className="mt-2 text-2xl font-bold">1 learner, 1 subject, 1 believable loop</h2>
+                </div>
+                <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Demo-ready
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {featureCards.map(({ title, description, icon: Icon }, index) => (
+                  <div
+                    key={title}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-5"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-200">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-blue-200">Step {index + 1}</p>
+                        <h3 className="mt-1 text-lg font-bold">{title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-300">{description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
     </main>
-  );
-}
-
-function FeatureCard({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
-  return (
-    <div className="flex flex-col items-start p-6 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-      <div className="rounded-lg bg-blue-50 p-3 mb-4">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-2">{title}</h3>
-      <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
-    </div>
   );
 }

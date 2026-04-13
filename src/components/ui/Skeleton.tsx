@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
+
+import { cn } from "@/src/lib/utils";
 
 export default function Skeleton({ className }: { className?: string }) {
-  return (
-    <div className={`animate-pulse bg-slate-200 rounded-md ${className}`} />
-  );
+  return <div className={cn("animate-pulse rounded-md bg-slate-200", className)} />;
 }
 
 export function ChatSkeleton() {
@@ -13,7 +13,7 @@ export function ChatSkeleton() {
         <Skeleton className="h-8 w-8 rounded-full" />
         <Skeleton className="h-16 w-48 rounded-2xl" />
       </div>
-      <div className="flex items-start gap-3 flex-row-reverse">
+      <div className="flex flex-row-reverse items-start gap-3">
         <Skeleton className="h-8 w-8 rounded-full" />
         <Skeleton className="h-12 w-32 rounded-2xl" />
       </div>
