@@ -1,7 +1,7 @@
 ﻿import type { LearningNode } from "@/src/lib/data/competition";
 import { supabase } from "../supabase/client";
 import { generateEmbedding } from "./embeddings";
-import { CHAT_MODEL, getAi } from "./gemini";
+import { CHAT_MODEL, getAi, hasAiConfig } from "./gemini";
 
 export interface SearchResult {
   id: string;
@@ -151,6 +151,49 @@ function buildFallbackTutorResponse(input: TutorRequestPayload) {
   const weakArea = input.learnerContext?.weakArea ?? activeTopic;
   const recommendedAction = input.learnerContext?.recommendedAction ?? input.activeNode?.recommendedAction ?? "làm từng bước nhỏ rồi kiểm tra lại";
   const hint = (input.context ?? [])[0]?.content ?? "Bắt đầu từ khái niệm cốt lõi, làm 1 ví dụ mẫu rồi thử lại bằng lời của mình.";
+  const normalizedMessage = input.userMessage.trim().toLowerCase();
+
+  if (
+    normalizedMessage.includes("vấn đề hiện tại") ||
+    normalizedMessage.includes("điểm yếu") ||
+    normalizedMessage.includes("trình độ") ||
+    normalizedMessage.includes("mức nào")
+  ) {
+    return `${learnerName} đang ở mức cần củng cố thêm ở phần ${weakArea.toLowerCase()}.
+
+Trong prototype này, mình chưa kết luận toàn bộ năng lực Toán của Minh, mà chỉ chốt phần đang yếu nhất để ưu tiên trước.
+
+Điều đó có nghĩa là:
+- Minh chưa chắc yếu toàn bộ môn Toán
+- nhưng ở ${activeTopic.toLowerCase()}, Minh vẫn cần ôn lại nền tảng
+- và bước nên làm ngay là: ${recommendedAction}
+
+Nếu muốn, Minh hỏi tiếp theo kiểu "em đang hổng đúng khái niệm nào?" hoặc "cho em một ví dụ thật dễ trước" nhé.`;
+  }
+
+  if (
+    normalizedMessage.includes("bạn có hiểu") ||
+    normalizedMessage.includes("mình đang nói gì") ||
+    normalizedMessage.includes("bạn hiểu")
+  ) {
+    return `Có, mình hiểu ý Minh.
+
+Minh đang muốn một phản hồi bám đúng câu mình vừa hỏi, chứ không muốn nghe lặp lại cùng một block.
+
+Trong phạm vi hiện tại, điều mình xác định được là ${weakArea.toLowerCase()} đang là điểm cần ưu tiên trước. Nếu Minh nói rõ "em chưa hiểu chỗ nào" hoặc gửi luôn bước đang làm dở, mình sẽ bám đúng chỗ đó để gợi tiếp.`;
+  }
+
+  if (
+    normalizedMessage.includes("ví dụ") ||
+    normalizedMessage.includes("example") ||
+    normalizedMessage.includes("giải thích")
+  ) {
+    return `${learnerName} nhé, mình lấy một ví dụ rất gần với ${activeTopic.toLowerCase()}:
+
+${hint}
+
+Minh thử nói lại quy tắc này bằng lời của mình trước. Khi Minh gửi lại, mình sẽ dựa đúng cách Minh hiểu để sửa hoặc gợi tiếp.`;
+  }
 
   return `${learnerName} ơi, mình đang giữ đúng trọng tâm là ${activeTopic.toLowerCase()} vì đây đang là điểm Minh cần xử lý trước.
 
@@ -170,6 +213,10 @@ export async function generateTutorResponse(input: TutorRequestPayload) {
   };
 
   try {
+    if (!hasAiConfig()) {
+      throw new Error("Missing Gemini API key in runtime environment.");
+    }
+
     const ai = getAi();
     const response = await ai.models.generateContent({
       model: CHAT_MODEL,
@@ -185,7 +232,11 @@ export async function generateTutorResponse(input: TutorRequestPayload) {
 
     return response.text?.trim() || buildFallbackTutorResponse(safeInput);
   } catch (error) {
-    console.error("Tutor response fallback activated", error);
+    console.error("Tutor response fallback activated", {
+      model: CHAT_MODEL,
+      hasApiKey: hasAiConfig(),
+      error: error instanceof Error ? error.message : String(error),
+    });
     return buildFallbackTutorResponse(safeInput);
   }
 }
