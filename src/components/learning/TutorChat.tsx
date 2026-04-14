@@ -87,7 +87,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: trimmed,
-          history: nextHistory.slice(-6),
+          history: messages.slice(-6),
           activeNode,
           learnerContext,
         }),

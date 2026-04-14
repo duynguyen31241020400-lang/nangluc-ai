@@ -31,6 +31,31 @@ export interface TutorRequestPayload {
   context?: SearchResult[];
 }
 
+interface TopicPlaybook {
+  coreIdea: string;
+  everydayExample: string;
+  classroomExample: string;
+  workedExample: string;
+  commonConfusion: string;
+  checkQuestion: string;
+}
+
+interface StudentMessageAnalysis {
+  normalizedMessage: string;
+  lastTutorQuestion: string | null;
+  isMetaQuestion: boolean;
+  wantsToStart: boolean;
+  wantsRephrase: boolean;
+  wantsExample: boolean;
+  wantsEverydayExample: boolean;
+  wantsClassroomExample: boolean;
+  asksYesNoConfirmation: boolean;
+  isAttemptingAnswer: boolean;
+  mentionsUncertainty: boolean;
+  interpretation: string;
+  tutoringMove: string;
+}
+
 const FALLBACK_KNOWLEDGE: Record<string, SearchResult[]> = {
   set_basics: [
     {
@@ -56,6 +81,33 @@ const FALLBACK_KNOWLEDGE: Record<string, SearchResult[]> = {
       similarity: 0.95,
     },
   ],
+};
+
+const TOPIC_PLAYBOOKS: Record<string, TopicPlaybook> = {
+  set_basics: {
+    coreIdea: "Tập hợp là một nhóm đối tượng được gom lại theo cùng một tiêu chí. Muốn biết một thứ có thuộc tập hay không thì phải xem nó có đúng tiêu chí của nhóm đó không.",
+    everydayExample: "Ví dụ đời thường: gọi A là tập đồ dùng học tập trong balo của Minh. Bút, vở, thước có thể thuộc A; còn chai nước chỉ thuộc A nếu mình cũng đang xếp nó vào nhóm đồ dùng đó.",
+    classroomExample: "Ví dụ trong lớp: gọi B là tập học sinh lớp 10A1. Lớp trưởng, lớp phó, tổ trưởng đều là phần tử của B nếu các bạn đó đúng là học sinh lớp 10A1.",
+    workedExample: "Ví dụ ngắn: A = {bút, vở, thước}. Bút thuộc A, còn bảng không thuộc A vì nó không nằm trong nhóm đã liệt kê.",
+    commonConfusion: "Học sinh hay nói đúng ý nhưng lẫn giữa tiêu chí của tập với ví dụ cụ thể, hoặc nhầm tập rỗng với một tập có đúng 1 phần tử.",
+    checkQuestion: "Nếu gọi C là tập học sinh trong lớp Minh, thì 'lớp trưởng' là một vai trò hay là một phần tử của C?",
+  },
+  set_operations: {
+    coreIdea: "Giao là phần chung của hai nhóm. Chỉ những phần tử xuất hiện ở cả hai nhóm mới nằm trong giao.",
+    everydayExample: "Ví dụ đời thường: A là nhóm bạn thích trà sữa, B là nhóm bạn thích đá bóng. Bạn nào vừa thích trà sữa vừa thích đá bóng thì nằm trong giao của A và B.",
+    classroomExample: "Ví dụ trong lớp: A là tập các bạn làm bài tập, B là tập các bạn nộp bài đúng hạn. Giao là những bạn vừa làm bài vừa nộp đúng hạn.",
+    workedExample: "Ví dụ ngắn: A = {1, 2, 3}, B = {2, 3, 4}. Giao là {2, 3}.",
+    commonConfusion: "Học sinh thường nhìn thấy phần tử có ở một tập là chọn ngay, thay vì kiểm tra nó có ở cả hai tập hay không.",
+    checkQuestion: "Nếu một bạn chỉ thuộc A mà không thuộc B, bạn đó có nằm trong giao của A và B không?",
+  },
+  quadratic_basics: {
+    coreIdea: "Hàm bậc hai có dạng ax² + bx + c với a khác 0. Chỉ cần nhìn thấy x² và hệ số của nó khác 0 là đã có dấu hiệu quan trọng nhất.",
+    everydayExample: "Ví dụ đời thường: đường đi của quả bóng khi bị ném lên thường cong thành dạng gần giống parabol.",
+    classroomExample: "Ví dụ trong lớp: khi cô vẽ đồ thị y = x² lên bảng, đường cong đối xứng đó là một parabol.",
+    workedExample: "Ví dụ ngắn: y = x² - 2x + 3 là hàm bậc hai vì có x² và hệ số của x² là 1, khác 0.",
+    commonConfusion: "Học sinh hay nhầm hàm bậc nhất với hàm bậc hai hoặc nhìn công thức nhưng quên kiểm tra hệ số của x².",
+    checkQuestion: "Trong y = 2x² + 3x - 1, phần nào cho mình biết chắc đây là hàm bậc hai?",
+  },
 };
 
 const RETRYABLE_TUTOR_ERROR_PATTERNS = ["503", "UNAVAILABLE", "overloaded", "temporarily unavailable", "Service Unavailable"];
@@ -99,6 +151,154 @@ function detectTopic(query: string, topic?: string) {
   return "set_basics";
 }
 
+function normalizeLooseText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function includesLoose(text: string, patterns: string[]) {
+  return patterns.some((pattern) => text.includes(pattern));
+}
+
+function getTopicPlaybook(query: string, topic?: string) {
+  const resolvedTopic = detectTopic(query, topic);
+  return TOPIC_PLAYBOOKS[resolvedTopic] ?? TOPIC_PLAYBOOKS.set_basics;
+}
+
+function getLastTutorQuestion(history: TutorMessage[] = []) {
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const message = history[index];
+    if (message.role === "tutor" && message.content.includes("?")) {
+      return message.content;
+    }
+  }
+
+  return null;
+}
+
+function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalysis {
+  const normalizedMessage = normalizeLooseText(input.userMessage);
+  const lastTutorQuestion = getLastTutorQuestion(input.history ?? []);
+  const isMetaQuestion = includesLoose(normalizedMessage, ["model gi", "ban la ai", "ai vay"]);
+  const wantsToStart = includesLoose(normalizedMessage, ["bat dau", "bat dau di", "ok bat dau", "roi bat dau"]);
+  const wantsRephrase = includesLoose(normalizedMessage, [
+    "chua hieu",
+    "khong hieu",
+    "giai thich lai",
+    "giai thich khac",
+    "noi cach khac",
+    "de hieu hon",
+    "giai thich lai cho minh",
+  ]);
+  const wantsEverydayExample = includesLoose(normalizedMessage, ["doi thuong", "thuc te", "ngoai doi"]);
+  const wantsClassroomExample = includesLoose(normalizedMessage, ["trong lop", "tren lop", "lop hoc"]);
+  const wantsExample = wantsEverydayExample || wantsClassroomExample || includesLoose(normalizedMessage, ["vi du", "example"]);
+  const asksYesNoConfirmation = includesLoose(normalizedMessage, [
+    "dung k",
+    "dung khong",
+    "duoc khong",
+    "phai k",
+    "co phai",
+    "ok khong",
+  ]);
+  const mentionsUncertainty = includesLoose(normalizedMessage, [
+    "hinh nhu",
+    "khong chac",
+    "khong biet",
+    "chac la",
+    "kieu",
+    "kiu",
+  ]);
+  const isAttemptingAnswer =
+    !isMetaQuestion &&
+    !wantsRephrase &&
+    (asksYesNoConfirmation || Boolean(lastTutorQuestion) || normalizedMessage.split(" ").length >= 5);
+
+  const interpretationParts: string[] = [];
+
+  if (isMetaQuestion) {
+    interpretationParts.push("Học sinh đang hỏi meta về tutor.");
+  }
+  if (wantsToStart) {
+    interpretationParts.push("Học sinh muốn bắt đầu ngay.");
+  }
+  if (wantsRephrase) {
+    interpretationParts.push("Học sinh chưa hiểu và muốn giải thích lại theo cách khác.");
+  }
+  if (wantsEverydayExample) {
+    interpretationParts.push("Học sinh muốn ví dụ đời thường.");
+  } else if (wantsClassroomExample) {
+    interpretationParts.push("Học sinh muốn ví dụ trong lớp học.");
+  } else if (wantsExample) {
+    interpretationParts.push("Học sinh muốn một ví dụ cụ thể.");
+  }
+  if (isAttemptingAnswer) {
+    interpretationParts.push("Học sinh đang trả lời thử bằng ngôn ngữ đời thường hoặc hơi ngô.");
+  }
+  if (asksYesNoConfirmation) {
+    interpretationParts.push("Học sinh muốn xác nhận đúng/sai ngay.");
+  }
+  if (mentionsUncertainty) {
+    interpretationParts.push("Học sinh chưa chắc cách diễn đạt của mình có chuẩn hay không.");
+  }
+
+  let tutoringMove = "Trả lời trực tiếp câu hỏi hiện tại bằng tiếng Việt tự nhiên, ngắn gọn và bám đúng topic.";
+
+  if (wantsToStart) {
+    tutoringMove = "Đừng hỏi ngược ngay. Hãy khởi động bài học bằng một bước đầu tiên rất đơn giản rồi mới hỏi kiểm tra hiểu.";
+  } else if (wantsRephrase) {
+    tutoringMove = "Đổi cách giải thích, tránh lặp lại ví dụ hoặc câu mở đầu cũ. Bắt đầu từ phần dễ hiểu đời thường hơn rồi mới nối về khái niệm Toán.";
+  } else if (wantsEverydayExample) {
+    tutoringMove = "Cho đúng một ví dụ đời thường mới rồi nối lại với khái niệm Toán trong một câu.";
+  } else if (wantsClassroomExample) {
+    tutoringMove = "Cho đúng một ví dụ trong lớp học rồi chỉ ra phần nào là phần tử, phần nào là tiêu chí của tập.";
+  } else if (isAttemptingAnswer && asksYesNoConfirmation) {
+    tutoringMove = "Trả lời đúng/sai ngay ở câu đầu. Sau đó công nhận phần đúng trước, rồi sửa chỗ lệch bằng ngôn ngữ rất nhẹ.";
+  } else if (isAttemptingAnswer) {
+    tutoringMove = "Xử lý như một câu trả lời thử: nhắc lại phần đúng bằng ngôn ngữ chuẩn hơn, sửa phần lệch nếu có, rồi hỏi tiếp một câu ngắn.";
+  } else if (isMetaQuestion) {
+    tutoringMove = "Trả lời cực ngắn bạn là AI Tutor, rồi kéo lại đúng bài học ngay.";
+  }
+
+  return {
+    normalizedMessage,
+    lastTutorQuestion,
+    isMetaQuestion,
+    wantsToStart,
+    wantsRephrase,
+    wantsExample,
+    wantsEverydayExample,
+    wantsClassroomExample,
+    asksYesNoConfirmation,
+    isAttemptingAnswer,
+    mentionsUncertainty,
+    interpretation: interpretationParts.join(" "),
+    tutoringMove,
+  };
+}
+
+function sanitizeHistory(history: TutorMessage[] = [], userMessage: string) {
+  if (!history.length) {
+    return [];
+  }
+
+  const lastMessage = history[history.length - 1];
+  if (
+    lastMessage.role === "user" &&
+    normalizeLooseText(lastMessage.content) === normalizeLooseText(userMessage)
+  ) {
+    return history.slice(0, -1);
+  }
+
+  return history;
+}
+
 function buildFallbackContext(query: string, topic?: string, limit = 3): SearchResult[] {
   const resolvedTopic = detectTopic(query, topic);
   return (FALLBACK_KNOWLEDGE[resolvedTopic] ?? FALLBACK_KNOWLEDGE.set_basics).slice(0, limit);
@@ -135,12 +335,19 @@ export async function hybridSearch(query: string, topic?: string, limit = 3): Pr
 
 function buildSystemInstruction(input: TutorRequestPayload) {
   const contextText = (input.context ?? []).map((item) => item.content).join("\n\n");
+  const recentTutorReplies = (input.history ?? [])
+    .filter((item) => item.role === "tutor")
+    .slice(-2)
+    .map((item) => item.content)
+    .join("\n---\n");
   const learnerName = input.learnerContext?.learnerName ?? "Minh";
   const learnerGrade = input.learnerContext?.learnerGrade ?? "Lớp 10";
   const learnerTarget = input.learnerContext?.learnerTarget ?? "tự tin hơn trước bài kiểm tra Toán";
   const shortGoal = input.learnerContext?.shortGoal ?? "chốt một điểm yếu chính và xử lý gọn";
   const weakArea = input.learnerContext?.weakArea ?? "phần kiến thức đang yếu";
   const activeTopic = input.learnerContext?.activeTopic ?? input.activeNode?.title ?? "topic hiện tại";
+  const analysis = analyzeStudentMessage(input);
+  const playbook = getTopicPlaybook(input.userMessage, input.activeNode?.id);
 
   return `
 Bạn là AI Tutor của Lumiq AI cho học sinh Việt Nam.
@@ -153,11 +360,30 @@ Bối cảnh phải luôn nhớ:
 - Topic đang học: ${activeTopic}
 
 Nguyên tắc trả lời:
-1. Không đưa đáp án trọn vẹn ngay nếu học sinh chưa thử.
-2. Ưu tiên gợi ý theo từng bước nhỏ, đúng topic đang học.
-3. Nếu có thể, nhắc lại sai lầm phổ biến và hỏi ngược để học sinh tự tiếp tục.
-4. Trả lời ngắn gọn, rõ, dùng tiếng Việt tự nhiên.
-5. Không nói lan man sang phần khác ngoài topic đang học.
+1. Không chấm lỗi cách diễn đạt của học sinh. Nếu câu nói ngô, sai chính tả nhẹ, thiếu dấu hoặc lẫn đời thường, hãy suy ra ý định gần đúng rồi mới trả lời.
+2. Nếu học sinh đang trả lời thử, hãy xác nhận phần đúng trước, sau đó mới sửa phần chưa chuẩn.
+3. Nếu học sinh hỏi kiểu đúng/sai, trả lời yes/no ở câu đầu tiên rồi giải thích ngắn gọn vì sao.
+4. Nếu học sinh nói chưa hiểu hoặc muốn giải thích lại, phải đổi cách giải thích chứ không lặp y nguyên ví dụ hoặc câu mở đầu cũ.
+5. Ưu tiên gợi ý theo từng bước nhỏ, đúng topic đang học.
+6. Trả lời ngắn gọn, rõ, dùng tiếng Việt tự nhiên, như một tutor đang kèm 1-1.
+7. Không nói lan man sang phần khác ngoài topic đang học.
+
+Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
+- Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}
+- Ý định suy ra: ${analysis.interpretation || "Chưa suy ra được gì đặc biệt."}
+- Cách đáp nên dùng: ${analysis.tutoringMove}
+- Câu hỏi gần nhất của tutor: ${analysis.lastTutorQuestion ?? "Không có."}
+
+Gợi ý sư phạm theo topic:
+- Ý chính: ${playbook.coreIdea}
+- Ví dụ đời thường: ${playbook.everydayExample}
+- Ví dụ trong lớp học: ${playbook.classroomExample}
+- Ví dụ ngắn: ${playbook.workedExample}
+- Chỗ dễ nhầm: ${playbook.commonConfusion}
+- Câu hỏi check hiểu: ${playbook.checkQuestion}
+
+Hai câu trả lời gần nhất của tutor, tránh lặp lại y nguyên:
+${recentTutorReplies || "Chưa có câu trả lời trước đó."}
 
 Kiến thức để bám vào:
 ${contextText || "Không có knowledge base ngoài, hãy bám chặt vào active topic và learner context."}
@@ -171,6 +397,71 @@ function buildFallbackTutorResponse(input: TutorRequestPayload) {
   const recommendedAction = input.learnerContext?.recommendedAction ?? input.activeNode?.recommendedAction ?? "làm từng bước nhỏ rồi kiểm tra lại";
   const hint = (input.context ?? [])[0]?.content ?? "Bắt đầu từ khái niệm cốt lõi, làm 1 ví dụ mẫu rồi thử lại bằng lời của mình.";
   const normalizedMessage = input.userMessage.trim().toLowerCase();
+  const analysis = analyzeStudentMessage(input);
+  const playbook = getTopicPlaybook(input.userMessage, input.activeNode?.id);
+
+  if (analysis.isMetaQuestion) {
+    return `Mình là AI Tutor của Lumiq AI, đang hỗ trợ Minh ở phần ${activeTopic.toLowerCase()}.
+
+Minh cứ nói kiểu tự nhiên cũng được, mình sẽ cố hiểu ý rồi gợi tiếp cho Minh.`;
+  }
+
+  if (analysis.wantsToStart) {
+    return `${learnerName} nhé, mình bắt đầu thật đơn giản:
+
+${playbook.coreIdea}
+
+Ví dụ nhanh:
+${playbook.classroomExample}
+
+Minh trả lời giúp mình một câu ngắn nhé: ${playbook.checkQuestion}`;
+  }
+
+  if (analysis.wantsRephrase) {
+    return `${learnerName} ơi, mình nói lại theo cách dễ hiểu hơn nhé:
+
+${playbook.coreIdea}
+
+Nếu lấy ví dụ gần đời sống một chút thì:
+${playbook.everydayExample}
+
+Minh thấy cách này dễ hình dung hơn chưa?`;
+  }
+
+  if (analysis.wantsEverydayExample) {
+    return `${learnerName} nhé, mình lấy ví dụ đời thường:
+
+${playbook.everydayExample}
+
+Từ ví dụ này, ý Toán Minh cần nhớ là: ${playbook.coreIdea}`;
+  }
+
+  if (analysis.wantsClassroomExample) {
+    return `${learnerName} nhé, mình lấy ví dụ ngay trong lớp học:
+
+${playbook.classroomExample}
+
+Chỗ quan trọng là: phần tử nào thật sự thuộc đúng nhóm mình đang xét thì mới nằm trong tập đó.`;
+  }
+
+  if (analysis.isAttemptingAnswer && analysis.asksYesNoConfirmation) {
+    return `${learnerName} đang đúng hướng rồi.
+
+Ví dụ "tập học sinh trong lớp" là một cách hiểu hợp lý. Các bạn như lớp trưởng, lớp phó, tổ trưởng đều có thể là phần tử của tập đó nếu họ đúng là học sinh trong lớp.
+
+Chỉ cần nhớ thêm một ý: mình đang xét theo tiêu chí "là học sinh trong lớp", nên ai không thuộc lớp đó thì không được tính vào tập này.
+
+Minh muốn mình giải thích tiếp bằng ví dụ đời thường hay ví dụ trong lớp?`;
+  }
+
+  if (analysis.isAttemptingAnswer) {
+    return `${learnerName} đang trả lời khá đúng hướng rồi.
+
+Phần đúng là: Minh đã nhìn ra tập hợp là một nhóm gồm nhiều đối tượng chung một tiêu chí.
+Phần cần chỉnh nhẹ là: mình phải nói rõ tiêu chí của nhóm trước, rồi mới liệt kê phần tử thuộc nhóm đó.
+
+Minh thử nói lại theo mẫu này nhé: "Tập ... là nhóm gồm các ..."`;
+  }
 
   if (
     normalizedMessage.includes("vấn đề hiện tại") ||
@@ -209,9 +500,9 @@ Trong phạm vi hiện tại, điều mình xác định được là ${weakArea
   ) {
     return `${learnerName} nhé, mình lấy một ví dụ rất gần với ${activeTopic.toLowerCase()}:
 
-${hint}
+${playbook.workedExample}
 
-Minh thử nói lại quy tắc này bằng lời của mình trước. Khi Minh gửi lại, mình sẽ dựa đúng cách Minh hiểu để sửa hoặc gợi tiếp.`;
+Nếu Minh muốn, mình có thể đổi sang ví dụ đời thường hoặc ví dụ ngay trong lớp học.`;
   }
 
   return `${learnerName} ơi, mình đang giữ đúng trọng tâm là ${activeTopic.toLowerCase()} vì đây đang là điểm Minh cần xử lý trước.
@@ -221,7 +512,7 @@ Gợi ý nhanh:
 - Bước nên làm ngay: ${recommendedAction}
 - Nếu Minh đang kẹt ở ${weakArea.toLowerCase()}, hãy thử nói lại đề bằng ngôn ngữ của mình trước khi tính tiếp.
 
-  Minh thử gửi cho mình bước Minh đang làm dở, mình sẽ gợi tiếp đúng chỗ đó.`;
+Minh thử gửi cho mình bước Minh đang làm dở, mình sẽ gợi tiếp đúng chỗ đó.`;
 }
 
 async function requestTutorModelResponse(model: string, input: TutorRequestPayload) {
@@ -250,7 +541,7 @@ export async function generateTutorResponse(input: TutorRequestPayload) {
   const safeInput = {
     ...input,
     context: input.context ?? [],
-    history: input.history ?? [],
+    history: sanitizeHistory(input.history ?? [], input.userMessage),
   };
   const aiConfig = getAiConfigSummary();
   const attemptedModels: string[] = [];
