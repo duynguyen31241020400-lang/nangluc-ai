@@ -1,7 +1,7 @@
 ﻿import type { LearningNode } from "@/src/lib/data/competition";
 import { supabase } from "../supabase/client";
 import { generateEmbedding } from "./embeddings";
-import { CHAT_MODEL, getAi, hasAiConfig } from "./gemini";
+import { CHAT_MODEL, getAi, getAiConfigSummary } from "./gemini";
 
 export interface SearchResult {
   id: string;
@@ -58,8 +58,27 @@ const FALLBACK_KNOWLEDGE: Record<string, SearchResult[]> = {
   ],
 };
 
+const RETRYABLE_TUTOR_ERROR_PATTERNS = ["503", "UNAVAILABLE", "overloaded", "temporarily unavailable", "Service Unavailable"];
+const RETRY_DELAYS_MS = [400, 1200];
+
 function hasSupabaseConfig() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableTutorError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return RETRYABLE_TUTOR_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+}
+
+function getTutorModelCandidates() {
+  const configuredFallbackModel = process.env.GEMINI_FALLBACK_CHAT_MODEL?.trim();
+  const defaultFallbackModel = CHAT_MODEL === "gemini-2.5-flash" ? "gemini-2.5-flash-lite" : "gemini-2.5-flash";
+
+  return Array.from(new Set([CHAT_MODEL, configuredFallbackModel, defaultFallbackModel].filter(Boolean))) as string[];
 }
 
 function detectTopic(query: string, topic?: string) {
@@ -202,7 +221,29 @@ Gợi ý nhanh:
 - Bước nên làm ngay: ${recommendedAction}
 - Nếu Minh đang kẹt ở ${weakArea.toLowerCase()}, hãy thử nói lại đề bằng ngôn ngữ của mình trước khi tính tiếp.
 
-Minh thử gửi cho mình bước Minh đang làm dở, mình sẽ gợi tiếp đúng chỗ đó.`;
+  Minh thử gửi cho mình bước Minh đang làm dở, mình sẽ gợi tiếp đúng chỗ đó.`;
+}
+
+async function requestTutorModelResponse(model: string, input: TutorRequestPayload) {
+  const ai = getAi();
+  const response = await ai.models.generateContent({
+    model,
+    contents: [
+      ...input.history!.map((message) => `${message.role === "user" ? "Học sinh" : "Tutor"}: ${message.content}`),
+      `Học sinh: ${input.userMessage}`,
+    ].join("\n"),
+    config: {
+      temperature: 0.35,
+      systemInstruction: buildSystemInstruction(input),
+    },
+  });
+
+  const text = response.text?.trim();
+  if (!text) {
+    throw new Error(`Gemini returned empty text for model ${model}.`);
+  }
+
+  return text;
 }
 
 export async function generateTutorResponse(input: TutorRequestPayload) {
@@ -211,30 +252,45 @@ export async function generateTutorResponse(input: TutorRequestPayload) {
     context: input.context ?? [],
     history: input.history ?? [],
   };
+  const aiConfig = getAiConfigSummary();
+  const attemptedModels: string[] = [];
 
   try {
-    if (!hasAiConfig()) {
+    if (!aiConfig.hasApiKey) {
       throw new Error("Missing Gemini API key in runtime environment.");
     }
 
-    const ai = getAi();
-    const response = await ai.models.generateContent({
-      model: CHAT_MODEL,
-      contents: [
-        ...safeInput.history.map((message) => `${message.role === "user" ? "Học sinh" : "Tutor"}: ${message.content}`),
-        `Học sinh: ${safeInput.userMessage}`,
-      ].join("\n"),
-      config: {
-        temperature: 0.35,
-        systemInstruction: buildSystemInstruction(safeInput),
-      },
-    });
+    let lastError: unknown = null;
 
-    return response.text?.trim() || buildFallbackTutorResponse(safeInput);
+    for (const model of getTutorModelCandidates()) {
+      attemptedModels.push(model);
+
+      for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
+        try {
+          return await requestTutorModelResponse(model, safeInput);
+        } catch (error) {
+          lastError = error;
+
+          if (!isRetryableTutorError(error) || attempt === RETRY_DELAYS_MS.length) {
+            break;
+          }
+
+          await sleep(RETRY_DELAYS_MS[attempt]);
+        }
+      }
+    }
+
+    throw new Error(
+      lastError instanceof Error
+        ? `${lastError.message} | attemptedModels=${attemptedModels.join(",")}`
+        : `Unknown Gemini error | attemptedModels=${attemptedModels.join(",")}`,
+    );
   } catch (error) {
     console.error("Tutor response fallback activated", {
       model: CHAT_MODEL,
-      hasApiKey: hasAiConfig(),
+      attemptedModels,
+      hasApiKey: aiConfig.hasApiKey,
+      apiKeySource: aiConfig.apiKeySource,
       error: error instanceof Error ? error.message : String(error),
     });
     return buildFallbackTutorResponse(safeInput);
