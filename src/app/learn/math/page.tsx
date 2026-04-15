@@ -21,7 +21,7 @@ export default function LearnMathPage() {
 
   useEffect(() => {
     const initialReport = getOrCreateDemoReport();
-    const initialNodes = buildLearningNodes(initialReport) as CompetencyNode[];
+    const initialNodes = buildLearningNodes(initialReport);
     setReport(initialReport);
     setActiveNode(initialNodes[0]);
   }, []);
@@ -31,7 +31,7 @@ export default function LearnMathPage() {
       return [] as CompetencyNode[];
     }
 
-    return buildLearningNodes(report) as CompetencyNode[];
+    return buildLearningNodes(report);
   }, [report]);
 
   useEffect(() => {
@@ -58,8 +58,8 @@ export default function LearnMathPage() {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_42%,#f8fafc_100%)] px-6 py-8 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+        <div className="flex flex-col gap-5 rounded-[2rem] border border-white/70 bg-white/70 p-5 shadow-sm backdrop-blur lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
             <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-blue-700">
               <ArrowLeft className="h-4 w-4" />
               Quay lại landing
@@ -69,7 +69,7 @@ export default function LearnMathPage() {
               Đây là bản demo hẹp nhưng thật của Lumiq AI: assessment vừa chạy xong được chuyển thành current goal rõ ràng, và tutor sẽ bám vào đúng điểm yếu đó.
             </p>
           </div>
-          <div className="rounded-[1.75rem] border border-blue-100 bg-white/90 p-4 shadow-sm backdrop-blur">
+          <div className="rounded-[1.75rem] border border-blue-100 bg-blue-50/70 p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Prototype guardrail</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Chỉ demo 1 learner archetype, 1 môn Toán, và 2 trạng thái personalized output đủ để chứng minh có cá nhân hóa.
@@ -78,7 +78,7 @@ export default function LearnMathPage() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.1fr_1.05fr]">
-          <section className="space-y-6">
+          <section className="order-1 space-y-6">
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -141,7 +141,7 @@ export default function LearnMathPage() {
             </div>
           </section>
 
-          <section className="space-y-6">
+          <section className="order-3 space-y-6 xl:order-2">
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2">
                 <BrainCircuit className="h-5 w-5 text-blue-600" />
@@ -160,7 +160,7 @@ export default function LearnMathPage() {
             </div>
           </section>
 
-          <section className="space-y-6">
+          <section className="order-2 space-y-6 xl:order-3">
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Active focus</p>
               <h2 className="mt-2 text-2xl font-black text-slate-900">{activeNode.title}</h2>
@@ -184,7 +184,7 @@ function switchScenario(
   setActiveNode: Dispatch<SetStateAction<CompetencyNode | null>>,
 ) {
   const nextReport = loadScenarioReport(id);
-  const nextNodes = buildLearningNodes(nextReport) as CompetencyNode[];
+  const nextNodes = buildLearningNodes(nextReport);
   setReport(nextReport);
   setActiveNode(nextNodes[0]);
 }

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Bot, Loader2, Send, Sparkles, User } from "lucide-react";
+import { Send, Sparkles, User } from "lucide-react";
 import type { LearningNode } from "@/src/lib/data/competition";
 import { cn } from "@/src/lib/utils";
 
@@ -116,15 +116,16 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
   }
 
   return (
-    <section className="flex h-full min-h-[38rem] flex-col rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+    <section className="flex h-full min-h-[28rem] flex-col rounded-[2rem] border border-slate-200 bg-white shadow-sm sm:min-h-[34rem]">
+      <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-50/70 px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-            <Sparkles className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+            <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-blue-700">AI Tutor</p>
-            <h2 className="text-lg font-bold text-slate-900">Đang bám topic: {activeNode.shortLabel}</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">AI Tutor</p>
+            <h2 className="text-base font-bold text-slate-900">{activeNode.shortLabel}</h2>
+            <p className="text-xs text-slate-500">Đang bám đúng topic Minh cần ưu tiên trước.</p>
           </div>
         </div>
         <div className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -132,11 +133,11 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
         </div>
       </div>
 
-      <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm text-slate-600">
+      <div className="border-b border-slate-100 bg-white px-5 py-3 text-sm text-slate-600">
         Điểm yếu hiện tại: <span className="font-semibold text-slate-900">{learnerContext.weakArea}</span>. Mục tiêu: <span className="font-semibold text-slate-900">{learnerContext.learnerTarget}</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+      <div ref={scrollRef} className="custom-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
         {messages.map((message, index) => (
           <div
             key={`${message.role}-${index}`}
@@ -146,8 +147,8 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             )}
           >
             {message.role === "tutor" ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-                <Bot className="h-4 w-4" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-[10px] font-bold tracking-[0.18em] text-white">
+                AI
               </div>
             ) : null}
             <div
@@ -169,9 +170,10 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
         ))}
 
         {isLoading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Lumiq AI đang dựng gợi ý tiếp theo cho Minh...
+          <div className="ml-12 flex items-center gap-1 text-sm text-slate-400">
+            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce" />
+            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:120ms]" />
+            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:240ms]" />
           </div>
         ) : null}
       </div>
@@ -183,6 +185,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             onChange={(event) => setInput(event.target.value)}
             placeholder={`Hỏi về ${activeNode.shortLabel.toLowerCase()} hoặc nhờ tutor gợi ý bước tiếp theo...`}
             className="h-11 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            maxLength={500}
             disabled={isLoading}
           />
           <button
@@ -193,6 +196,11 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             <Send className="h-4 w-4" />
           </button>
         </div>
+        {input.length >= 400 ? (
+          <p className={cn("pt-2 pr-4 text-right text-[11px]", input.length >= 480 ? "text-amber-600" : "text-slate-400")}>
+            {input.length}/500
+          </p>
+        ) : null}
       </form>
     </section>
   );

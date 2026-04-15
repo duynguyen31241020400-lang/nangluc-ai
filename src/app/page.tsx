@@ -24,8 +24,24 @@ const featureCards = [
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe,transparent_38%),linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)] text-slate-900">
-      <section className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center gap-12 px-6 py-16 lg:flex-row lg:items-center lg:gap-16">
+      <div className="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div>
+            <p className="text-sm font-black tracking-[0.18em] text-slate-900">LUMIQ AI</p>
+            <p className="text-xs text-slate-500">Prototype học tập cá nhân hóa</p>
+          </div>
+          <Link
+            href="/assessment"
+            className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            Bắt đầu
+          </Link>
+        </div>
+      </div>
+
+      <section className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-7xl flex-col justify-center gap-12 px-6 py-16 lg:flex-row lg:items-center lg:gap-16">
         <div className="max-w-3xl flex-1">
+          <div className="pointer-events-none absolute left-1/2 top-40 -z-10 hidden h-72 w-72 -translate-x-1/2 rounded-full bg-blue-300/25 blur-3xl sm:block" />
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm backdrop-blur">
             <Sparkles className="h-4 w-4" />
             Competition prototype for IU Startup Demo Day 2026
@@ -56,17 +72,26 @@ export default function HomePage() {
             </Link>
           </div>
 
+          <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-slate-600">
+            <div className="rounded-full border border-white/80 bg-white/85 px-4 py-2 shadow-sm">6 câu chẩn đoán ngắn</div>
+            <div className="rounded-full border border-white/80 bg-white/85 px-4 py-2 shadow-sm">1 current goal rõ ràng</div>
+            <div className="rounded-full border border-white/80 bg-white/85 px-4 py-2 shadow-sm">Tutor bám đúng topic yếu</div>
+          </div>
+
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First user</p>
+            <div className="rounded-3xl border border-white/80 border-t-4 border-t-blue-500 bg-white/80 p-5 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg">
+              <p className="text-xs font-bold tracking-[0.24em] text-blue-600">01</p>
+              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First user</p>
               <p className="mt-2 text-lg font-bold">Học sinh lớp 10 yếu Toán</p>
             </div>
-            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First value</p>
+            <div className="rounded-3xl border border-white/80 border-t-4 border-t-blue-500 bg-white/80 p-5 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg">
+              <p className="text-xs font-bold tracking-[0.24em] text-blue-600">02</p>
+              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">First value</p>
               <p className="mt-2 text-lg font-bold">Biết đúng điểm yếu để học tập trung</p>
             </div>
-            <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Demo promise</p>
+            <div className="rounded-3xl border border-white/80 border-t-4 border-t-blue-500 bg-white/80 p-5 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg">
+              <p className="text-xs font-bold tracking-[0.24em] text-blue-600">03</p>
+              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Demo promise</p>
               <p className="mt-2 text-lg font-bold">Ít nhưng thật và mượt</p>
             </div>
           </div>
@@ -108,6 +133,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-white/70 bg-white/70">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-semibold text-slate-700">Lumiq AI</p>
+          <p>Prototype gọn, rõ, dễ gửi thử cho học sinh.</p>
+        </div>
+      </footer>
     </main>
   );
 }

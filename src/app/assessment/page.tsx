@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Sparkles, Target } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 import { saveAssessmentReport } from "@/src/lib/demo-state";
 
 const TEST_DURATION_SECONDS = 8 * 60;
+const OPTION_PREFIXES = ["A", "B", "C", "D"];
 
 type Step = "intro" | "test" | "result";
 
@@ -84,6 +86,13 @@ export default function AssessmentPage() {
       <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Quay lại trang chủ
+            </Link>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-blue-200">
               <Sparkles className="h-4 w-4" />
               Assessment 6 câu, 3 competency, 1 output cá nhân hóa
@@ -94,10 +103,11 @@ export default function AssessmentPage() {
             <p className="mt-5 text-lg leading-8 text-slate-300">
               Mục tiêu của demo không phải kiểm tra dài, mà là chỉ ra thật nhanh Minh đang yếu ở phần nào để chuyển ngay sang lộ trình học tập trung.
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <InfoCard label="Số câu" value="6 câu" />
               <InfoCard label="Competency" value="3 nhóm" />
               <InfoCard label="Thời lượng" value="8 phút" />
+              <InfoCard label="Tâm lý" value="Không tính điểm" />
             </div>
           </div>
 
@@ -152,18 +162,42 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="mt-6 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                  Câu {currentIndex + 1}/{DIAGNOSTIC_QUESTIONS.length}
+                </div>
+                <div className="text-sm font-medium text-slate-500">
+                  {answeredCount}/{DIAGNOSTIC_QUESTIONS.length} câu đã trả lời
+                </div>
+              </div>
               <div>
                 <div className="flex items-center justify-between text-sm text-slate-500">
                   <span>Tiến độ</span>
-                  <span>{answeredCount}/{DIAGNOSTIC_QUESTIONS.length} câu đã trả lời</span>
+                  <span>{Math.round(progress)}%</span>
                 </div>
                 <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
                   <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
                 </div>
               </div>
-              <div className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
-                Câu {currentIndex + 1}/{DIAGNOSTIC_QUESTIONS.length}
+              <div className="flex flex-wrap gap-2">
+                {DIAGNOSTIC_QUESTIONS.map((question, index) => {
+                  const isCurrent = index === currentIndex;
+                  const isAnswered = Boolean(answers[question.id]);
+
+                  return (
+                    <span
+                      key={question.id}
+                      className={`h-2.5 w-2.5 rounded-full transition ${
+                        isCurrent
+                          ? "bg-blue-600"
+                          : isAnswered
+                            ? "bg-blue-200"
+                            : "bg-slate-200"
+                      }`}
+                    />
+                  );
+                })}
               </div>
             </div>
 
@@ -174,7 +208,7 @@ export default function AssessmentPage() {
               <h2 className="mt-4 text-2xl font-bold leading-tight text-balance">{currentQuestion.question}</h2>
               <fieldset className="mt-6 space-y-3">
                 <legend className="sr-only">Chọn một đáp án</legend>
-                {currentQuestion.options.map((option) => {
+                {currentQuestion.options.map((option, optionIndex) => {
                   const isActive = answers[currentQuestion.id] === option;
                   return (
                     <div key={option}>
@@ -193,7 +227,12 @@ export default function AssessmentPage() {
                           onChange={() => setAnswers((current) => ({ ...current, [currentQuestion.id]: option }))}
                           className="mt-1 h-4 w-4 flex-none accent-blue-600"
                         />
-                        <span className="flex-1 leading-7">{option}</span>
+                        <span className="flex-1 leading-7">
+                          <span className="mr-2 inline-flex min-w-7 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                            {OPTION_PREFIXES[optionIndex] ?? optionIndex + 1}
+                          </span>
+                          {option}
+                        </span>
                       </label>
                     </div>
                   );
@@ -205,7 +244,7 @@ export default function AssessmentPage() {
               <button
                 onClick={() => setCurrentIndex((current) => Math.max(current - 1, 0))}
                 disabled={currentIndex === 0}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Quay lại
@@ -221,7 +260,7 @@ export default function AssessmentPage() {
                   setCurrentIndex((current) => Math.min(current + 1, DIAGNOSTIC_QUESTIONS.length - 1));
                 }}
                 disabled={!answers[currentQuestion.id]}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 {currentIndex === DIAGNOSTIC_QUESTIONS.length - 1 ? "Xem kết quả" : "Tiếp theo"}
                 <ChevronRight className="h-4 w-4" />
@@ -272,7 +311,7 @@ export default function AssessmentPage() {
                   </div>
                 </div>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
-                  <div className="h-full rounded-full bg-blue-600" style={{ width: `${result.score * 100}%` }} />
+                  <div className={`h-full rounded-full ${masteryBarClasses(result.score)}`} style={{ width: `${result.score * 100}%` }} />
                 </div>
                 <p className="mt-3 text-sm text-slate-600">Đúng {result.correct}/{result.total} câu. {result.explanation}</p>
               </div>
@@ -322,4 +361,16 @@ function badgeClasses(level: "weak" | "average" | "strong") {
   }
 
   return "bg-emerald-100 text-emerald-700";
+}
+
+function masteryBarClasses(score: number) {
+  if (score >= 0.7) {
+    return "bg-emerald-500";
+  }
+
+  if (score >= 0.4) {
+    return "bg-amber-500";
+  }
+
+  return "bg-rose-500";
 }
