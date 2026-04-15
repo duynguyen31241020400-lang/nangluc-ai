@@ -334,7 +334,9 @@ export function buildLearningNodes(report: AssessmentReport): LearningNode[] {
   });
 }
 
-export function buildLearnerContext(report: AssessmentReport, activeNode?: LearningNode) {
+type LearnerContextNode = Pick<LearningNode, "title" | "recommendedAction">;
+
+export function buildLearnerContext(report: AssessmentReport, activeNode?: LearnerContextNode) {
   const weakest = getCompetencyDefinition(report.weakestCompetencyId);
   const focus = activeNode ?? buildLearningNodes(report)[0];
 
