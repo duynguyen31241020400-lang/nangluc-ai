@@ -1,23 +1,14 @@
 ﻿"use client";
 
 import { CheckCircle2, Sparkles } from "lucide-react";
+import type { LearningNode } from "@/src/lib/data/competition";
 import { cn } from "@/src/lib/utils";
 
-export interface CompetencyNode {
-  id: string;
-  code: string;
-  title: string;
-  shortLabel: string;
-  mastery: number;
-  status: "completed" | "active" | "available";
-  description: string;
-  recommendedAction: string;
-  isCurrentGoal?: boolean;
-}
+export type CompetencyNode = LearningNode;
 
 interface ProgressTreeProps {
   nodes: CompetencyNode[];
-  activeNodeId?: string;
+  activeNodeId?: LearningNode["id"];
   onNodeClick: (node: CompetencyNode) => void;
 }
 
