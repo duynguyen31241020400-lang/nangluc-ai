@@ -170,7 +170,11 @@ export default function LearnMathPage() {
               </div>
             </div>
 
-            <TutorChat activeNode={activeNode} learnerContext={learnerContext} />
+            <TutorChat
+                key={report.demoScenarioId ?? report.generatedAt}
+                activeNode={activeNode}
+                learnerContext={learnerContext}
+              />
           </section>
         </div>
       </div>

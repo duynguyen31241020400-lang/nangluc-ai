@@ -23,7 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={inter.className}>
         <ErrorBoundary>
           {children}
-          <FeedbackButton />
+          {process.env.NODE_ENV !== "production" && <FeedbackButton />}
         </ErrorBoundary>
         <Script id="lumiq-service-worker" strategy="afterInteractive">
           {`

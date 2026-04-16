@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Sparkles, Target } from "lucide-react";
 import {
@@ -23,6 +23,20 @@ export default function AssessmentPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION_SECONDS);
   const [report, setReport] = useState<ReturnType<typeof calculateAssessmentReport> | null>(null);
+
+  // Mirror answers into a ref so handleSubmit can read the latest value
+  // without being recreated on every keystroke (avoids stale-closure warning).
+  const answersRef = useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  const handleSubmit = useCallback(() => {
+    const nextReport = calculateAssessmentReport(answersRef.current);
+    saveAssessmentReport(nextReport);
+    setReport(nextReport);
+    setStep("result");
+  }, []);
 
   useEffect(() => {
     if (step !== "test") {
@@ -47,7 +61,7 @@ export default function AssessmentPage() {
     if (step === "test" && timeLeft === 0) {
       handleSubmit();
     }
-  }, [step, timeLeft]);
+  }, [step, timeLeft, handleSubmit]);
 
   const currentQuestion = DIAGNOSTIC_QUESTIONS[currentIndex];
   const progress = ((currentIndex + 1) / DIAGNOSTIC_QUESTIONS.length) * 100;
@@ -60,13 +74,6 @@ export default function AssessmentPage() {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }
-
-  function handleSubmit() {
-    const nextReport = calculateAssessmentReport(answers);
-    saveAssessmentReport(nextReport);
-    setReport(nextReport);
-    setStep("result");
   }
 
   function startTest() {
