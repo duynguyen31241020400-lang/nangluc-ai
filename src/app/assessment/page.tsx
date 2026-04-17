@@ -77,6 +77,7 @@ export default function AssessmentPage() {
   }
 
   function startTest() {
+    answersRef.current = {};
     setAnswers({});
     setCurrentIndex(0);
     setTimeLeft(TEST_DURATION_SECONDS);
