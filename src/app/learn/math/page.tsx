@@ -148,7 +148,7 @@ export default function LearnMathPage() {
                 <h2 className="text-lg font-bold">Progress tree theo kết quả assessment</h2>
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Current goal sẽ nhảy theo nhóm yếu nhất. Đây là chỗ quan trọng nhất để demo cho giám khảo thấy personalization thực sự tồn tại.
+                Current goal sẽ nhảy theo chủ đề yếu nhất. Đây là chỗ quan trọng nhất để demo cho giám khảo thấy personalization thực sự tồn tại.
               </p>
               <div className="mt-6">
                 <ProgressTree
@@ -165,7 +165,7 @@ export default function LearnMathPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Active focus</p>
               <h2 className="mt-2 text-2xl font-black text-slate-900">{activeNode.title}</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <MetricCard label="Mastery hiện tại" value={`${Math.round(activeNode.mastery * 100)}%`} helper={recommended?.title === activeNode.title ? "Đây là nhóm đang được ưu tiên." : "Đã có nền tương đối ổn hơn."} />
+                <MetricCard label="Mastery hiện tại" value={`${Math.round(activeNode.mastery * 100)}%`} helper={recommended?.title === activeNode.title ? "Đây là chủ đề đang được ưu tiên." : "Đã có nền tương đối ổn hơn."} />
                 <MetricCard label="Mức đánh giá" value={getMasteryLabel(report.results.find((item) => item.competencyId === activeNode.id)?.level ?? "average")} helper={activeNode.recommendedAction} />
               </div>
             </div>
