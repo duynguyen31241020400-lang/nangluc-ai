@@ -352,9 +352,11 @@ export default function AssessmentPage() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-white">{value}</p>
+    <div className="flex min-h-40 flex-col justify-between rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+      <p className="max-w-[10ch] text-[11px] leading-5 font-semibold uppercase tracking-[0.12em] text-slate-400 sm:text-xs sm:tracking-[0.16em]">
+        {label}
+      </p>
+      <p className="mt-4 text-2xl leading-tight font-bold text-white sm:text-3xl">{value}</p>
     </div>
   );
 }
