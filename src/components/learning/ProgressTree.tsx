@@ -26,23 +26,23 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
             onClick={() => onNodeClick(node)}
             title={node.status === "available" ? "Học sau khi xong mục tiêu hiện tại" : undefined}
             className={cn(
-              "group relative w-full rounded-[1.6rem] border p-5 text-left transition",
+              "group relative w-full rounded-[2rem] border p-5 text-left transition",
               isActiveCard
-                ? "border-blue-300 bg-blue-50 shadow-lg shadow-blue-100"
-                : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm",
+                ? "border-rose-900/20 bg-rose-50/80 shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/10"
+                : "border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200 hover:border-rose-900/20 hover:bg-rose-50/30",
             )}
           >
             {index !== nodes.length - 1 ? (
-              <span className="absolute left-8 top-[calc(100%+0.25rem)] h-6 w-px bg-slate-200" />
+              <span className="absolute left-8 top-[calc(100%+0.25rem)] h-6 w-px bg-stone-300" />
             ) : null}
 
             <div className="flex items-start gap-4">
               <div
                 className={cn(
                   "mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border text-sm font-bold",
-                  node.status === "completed" && "border-emerald-200 bg-emerald-50 text-emerald-700",
-                  node.status === "active" && "border-blue-200 bg-blue-600 text-white",
-                  node.status === "available" && "border-slate-200 bg-slate-50 text-slate-600",
+                  node.status === "completed" && "border-emerald-200 bg-emerald-50 text-emerald-800",
+                  node.status === "active" && "border-rose-900 bg-rose-900 text-[#faf7ef]",
+                  node.status === "available" && "border-stone-200 bg-stone-100 text-stone-600",
                 )}
               >
                 {node.status === "completed" ? (
@@ -57,35 +57,35 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{node.code}</p>
-                    <h3 className="mt-1 text-xl font-bold text-slate-900">{node.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{node.description}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">{node.code}</p>
+                    <h3 className="mt-1 font-display text-xl font-bold text-stone-900">{node.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-stone-700">{node.description}</p>
                   </div>
                   <div className={cn(
-                    "inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
-                    node.status === "completed" && "bg-emerald-100 text-emerald-700",
-                    node.status === "active" && "bg-blue-100 text-blue-700",
-                    node.status === "available" && "bg-slate-100 text-slate-600",
+                    "inline-flex shrink-0 rounded-2xl px-3 py-1 text-xs font-semibold ring-1",
+                    node.status === "completed" && "bg-emerald-100 text-emerald-800 ring-emerald-800/15",
+                    node.status === "active" && "bg-rose-100 text-rose-900 ring-rose-900/15",
+                    node.status === "available" && "bg-stone-100 text-stone-600 ring-stone-200",
                   )}>
                     {node.isCurrentGoal ? "Current goal" : node.status === "completed" ? "Đã vững" : "Học sau"}
                   </div>
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">
                     <span>Mastery</span>
-                    <span className={cn(node.status === "active" && "text-blue-700")}>{masteryPercent}%</span>
+                    <span className={cn(node.status === "active" && "text-rose-900")}>{masteryPercent}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2 overflow-hidden rounded-full bg-stone-200">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all",
-                        node.status === "completed" ? "bg-emerald-500" : node.status === "active" ? "bg-blue-600" : "bg-slate-400",
+                        node.status === "completed" ? "bg-emerald-700" : node.status === "active" ? "bg-rose-900" : "bg-stone-400",
                       )}
                       style={{ width: `${masteryPercent}%` }}
                     />
                   </div>
-                  <p className="text-sm leading-6 text-slate-500">{helperText}</p>
+                  <p className="text-sm leading-6 text-stone-600">{helperText}</p>
                 </div>
               </div>
             </div>

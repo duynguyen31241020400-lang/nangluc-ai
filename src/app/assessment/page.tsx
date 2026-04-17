@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import {
   getMasteryLabel,
 } from "@/src/lib/data/competition";
 import { saveAssessmentReport } from "@/src/lib/demo-state";
+import DotGrid from "@/src/components/ui/DotGrid";
 
 const TEST_DURATION_SECONDS = 8 * 60;
 const OPTION_PREFIXES = ["A", "B", "C", "D"];
@@ -24,8 +25,6 @@ export default function AssessmentPage() {
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION_SECONDS);
   const [report, setReport] = useState<ReturnType<typeof calculateAssessmentReport> | null>(null);
 
-  // Mirror answers into a ref so handleSubmit can read the latest value
-  // without being recreated on every keystroke (avoids stale-closure warning).
   const answersRef = useRef(answers);
   useEffect(() => {
     answersRef.current = answers;
@@ -91,24 +90,29 @@ export default function AssessmentPage() {
 
   if (step === "intro") {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+      <main className="relative min-h-screen overflow-hidden bg-stone-900 px-6 py-12 text-[#faf7ef]">
+        <DotGrid variant="light" />
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-stone-400 transition hover:text-[#faf7ef]"
             >
               <ChevronLeft className="h-4 w-4" />
               Quay lại trang chủ
             </Link>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-blue-200">
-              <Sparkles className="h-4 w-4" />
-              Assessment 6 câu, 3 chủ đề, 1 output cá nhân hóa
+            <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-[#faf7ef]/15 bg-[#faf7ef]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              6 câu · 3 chủ đề · 1 output cá nhân hóa
             </div>
-            <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">
-              Bài chẩn đoán đầu vào của Lumiq AI
+            <p className="mt-8 font-display text-sm font-semibold uppercase tracking-[0.32em] text-stone-400">
+              Chương I — Chẩn đoán
+            </p>
+            <div className="mt-3 h-px w-24 bg-rose-300/40" />
+            <h1 className="mt-5 font-display text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+              Bài chẩn đoán <em className="not-italic text-rose-300">đầu vào</em> của Lumiq AI
             </h1>
-            <p className="mt-5 text-lg leading-8 text-slate-300">
+            <p className="mt-5 text-lg leading-8 text-stone-300">
               Mục tiêu của demo không phải kiểm tra dài, mà là chỉ ra thật nhanh Minh đang yếu ở phần nào để chuyển ngay sang lộ trình học tập trung.
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -119,21 +123,21 @@ export default function AssessmentPage() {
             </div>
           </div>
 
-          <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur">
-            <div className="rounded-[1.5rem] bg-white px-6 py-8 text-slate-900">
+          <div className="w-full max-w-xl rounded-[2rem] border border-[#faf7ef]/15 bg-[#faf7ef]/5 p-6 shadow-xl shadow-stone-950/40 backdrop-blur">
+            <div className="rounded-2xl bg-[#faf7ef] px-6 py-8 text-stone-900">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-900 ring-1 ring-rose-900/20">
                   <Target className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-blue-700">Seeded learner</p>
-                  <h2 className="text-2xl font-bold">Minh - lớp 10</h2>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">Seeded learner</p>
+                  <h2 className="font-display text-2xl font-bold">Minh — lớp 10</h2>
                 </div>
               </div>
 
-              <div className="mt-6 rounded-3xl bg-slate-50 p-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Outcome</p>
-                <ul className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
+              <div className="mt-6 rounded-2xl bg-stone-100 p-5 ring-1 ring-stone-200">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">Outcome</p>
+                <ul className="mt-3 space-y-3 text-sm leading-6 text-stone-700">
                   <li>Biết ngay chủ đề yếu nhất.</li>
                   <li>Nhận current goal để vào lộ trình học.</li>
                   <li>Tutor sau đó trả lời theo đúng topic vừa được khuyến nghị.</li>
@@ -142,7 +146,7 @@ export default function AssessmentPage() {
 
               <button
                 onClick={startTest}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-900 px-6 py-4 text-base font-semibold text-[#faf7ef] shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/40 transition hover:-translate-y-0.5 hover:bg-rose-800"
               >
                 Bắt đầu assessment
                 <ArrowRight className="h-4 w-4" />
@@ -156,36 +160,36 @@ export default function AssessmentPage() {
 
   if (step === "test") {
     return (
-      <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+      <main className="min-h-screen bg-[#faf7ef] px-6 py-10 text-stone-900">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex flex-col gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-[2rem] border border-stone-300 bg-[#fffdf7] p-6 shadow-sm ring-1 ring-stone-200 sm:p-8">
+            <div className="flex flex-col gap-5 border-b border-stone-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Diagnostic flow</p>
-                <h1 className="mt-2 text-3xl font-black">Assessment của Minh</h1>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">Diagnostic flow</p>
+                <h1 className="mt-2 font-display text-3xl font-black">Assessment của Minh</h1>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
-                <Clock3 className="h-4 w-4 text-blue-600" />
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-stone-300 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-700">
+                <Clock3 className="h-4 w-4 text-rose-900" />
                 {formatTime(timeLeft)}
               </div>
             </div>
 
             <div className="mt-6 space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                <div className="rounded-2xl bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-900 ring-1 ring-rose-900/15">
                   Câu {currentIndex + 1}/{DIAGNOSTIC_QUESTIONS.length}
                 </div>
-                <div className="text-sm font-medium text-slate-500">
+                <div className="text-sm font-medium text-stone-500">
                   {answeredCount}/{DIAGNOSTIC_QUESTIONS.length} câu đã trả lời
                 </div>
               </div>
               <div>
-                <div className="flex items-center justify-between text-sm text-slate-500">
+                <div className="flex items-center justify-between text-sm text-stone-500">
                   <span>Tiến độ</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200">
+                  <div className="h-full rounded-full bg-rose-900 transition-all" style={{ width: `${progress}%` }} />
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -198,10 +202,10 @@ export default function AssessmentPage() {
                       key={question.id}
                       className={`h-2.5 w-2.5 rounded-full transition ${
                         isCurrent
-                          ? "bg-blue-600"
+                          ? "bg-rose-900"
                           : isAnswered
-                            ? "bg-blue-200"
-                            : "bg-slate-200"
+                            ? "bg-rose-300"
+                            : "bg-stone-300"
                       }`}
                     />
                   );
@@ -209,11 +213,11 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            <div className="mt-8 rounded-[1.75rem] border border-slate-100 bg-slate-50 p-6 sm:p-8">
-              <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-stone-200 bg-stone-50 p-6 sm:p-8">
+              <div className="inline-flex rounded-2xl bg-[#faf7ef] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900 ring-1 ring-stone-200">
                 {currentQuestion.competencyId.replace("_", " ")}
               </div>
-              <h2 className="mt-4 text-2xl font-bold leading-tight text-balance">{currentQuestion.question}</h2>
+              <h2 className="mt-4 font-display text-2xl font-bold leading-tight text-balance sm:text-3xl">{currentQuestion.question}</h2>
               <fieldset className="mt-6 space-y-3">
                 <legend className="sr-only">Chọn một đáp án</legend>
                 {currentQuestion.options.map((option, optionIndex) => {
@@ -223,8 +227,8 @@ export default function AssessmentPage() {
                       <label
                         className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl border px-5 py-4 text-left text-base transition ${
                           isActive
-                            ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/50"
+                            ? "border-rose-900 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-900/20"
+                            : "border-stone-200 bg-[#fffdf7] text-stone-700 hover:border-rose-900/40 hover:bg-rose-50/40"
                         }`}
                       >
                         <input
@@ -233,10 +237,10 @@ export default function AssessmentPage() {
                           value={option}
                           checked={isActive}
                           onChange={() => setAnswers((current) => ({ ...current, [currentQuestion.id]: option }))}
-                          className="mt-1 h-4 w-4 flex-none accent-blue-600"
+                          className="mt-1 h-4 w-4 flex-none accent-rose-900"
                         />
                         <span className="flex-1 leading-7">
-                          <span className="mr-2 inline-flex min-w-7 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                          <span className="mr-2 inline-flex min-w-7 items-center justify-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-bold text-stone-500">
                             {OPTION_PREFIXES[optionIndex] ?? optionIndex + 1}
                           </span>
                           {option}
@@ -252,7 +256,7 @@ export default function AssessmentPage() {
               <button
                 onClick={() => setCurrentIndex((current) => Math.max(current - 1, 0))}
                 disabled={currentIndex === 0}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-600 transition hover:border-stone-400 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Quay lại
@@ -268,7 +272,7 @@ export default function AssessmentPage() {
                   setCurrentIndex((current) => Math.min(current + 1, DIAGNOSTIC_QUESTIONS.length - 1));
                 }}
                 disabled={!answers[currentQuestion.id]}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-900 px-6 py-3 text-sm font-semibold text-[#faf7ef] shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/40 transition hover:-translate-y-0.5 hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 {currentIndex === DIAGNOSTIC_QUESTIONS.length - 1 ? "Xem kết quả" : "Tiếp theo"}
                 <ChevronRight className="h-4 w-4" />
@@ -285,21 +289,22 @@ export default function AssessmentPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+    <main className="min-h-screen bg-[#faf7ef] px-6 py-10 text-stone-900">
       <div className="mx-auto max-w-5xl space-y-8">
-        <div className="rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-[2rem] bg-[#fffdf7] p-8 shadow-sm ring-1 ring-stone-200">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+              <div className="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800 ring-1 ring-emerald-800/15">
                 <CheckCircle2 className="h-4 w-4" />
                 Assessment completed
               </div>
-              <h1 className="mt-4 text-4xl font-black tracking-tight">Kết quả của {report.learner.name}</h1>
-              <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">{report.summary}</p>
+              <h1 className="mt-4 font-display text-4xl font-black tracking-tight sm:text-5xl">Kết quả của {report.learner.name}</h1>
+              <div className="mt-3 scholarly-rule w-24" />
+              <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-700">{report.summary}</p>
             </div>
             <button
               onClick={goToLearnPath}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-900 px-6 py-4 text-sm font-semibold text-[#faf7ef] shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/40 transition hover:-translate-y-0.5 hover:bg-rose-800"
             >
               Vào lộ trình cá nhân hóa
               <ArrowRight className="h-4 w-4" />
@@ -308,37 +313,41 @@ export default function AssessmentPage() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {report.results.map((result) => (
-              <div key={result.competencyId} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+              <div key={result.competencyId} className="rounded-2xl border border-stone-200 bg-stone-50 p-5 ring-1 ring-stone-200">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{result.code}</p>
-                    <h2 className="mt-2 text-xl font-bold text-slate-900">{result.title}</h2>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">{result.code}</p>
+                    <h2 className="mt-2 font-display text-xl font-bold text-stone-900">{result.title}</h2>
                   </div>
-                  <div className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClasses(result.level)}`}>
+                  <div className={`rounded-2xl px-3 py-1 text-xs font-semibold ${badgeClasses(result.level)}`}>
                     {getMasteryLabel(result.level)}
                   </div>
                 </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-stone-200">
                   <div className={`h-full rounded-full ${masteryBarClasses(result.score)}`} style={{ width: `${result.score * 100}%` }} />
                 </div>
-                <p className="mt-3 text-sm text-slate-600">Đúng {result.correct}/{result.total} câu. {result.explanation}</p>
+                <p className="mt-3 text-sm text-stone-600">Đúng {result.correct}/{result.total} câu. {result.explanation}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-          <div className="rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-100">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">Current recommendation</p>
-            <h2 className="mt-3 text-3xl font-black text-balance">
-              Ưu tiên {report.results.find((item) => item.competencyId === report.recommendedCompetencyId)?.title.toLowerCase()} trước.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-blue-50">{report.coachNote}</p>
+          <div className="relative overflow-hidden rounded-[2rem] border border-rose-900 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 p-8 text-[#faf7ef] shadow-xl shadow-stone-900/20">
+            <DotGrid variant="light" />
+            <div className="relative">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-rose-300">Current recommendation</p>
+              <h2 className="mt-3 font-display text-3xl font-black text-balance sm:text-4xl">
+                Ưu tiên <em className="not-italic text-rose-300">{report.results.find((item) => item.competencyId === report.recommendedCompetencyId)?.title.toLowerCase()}</em> trước.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-stone-200">{report.coachNote}</p>
+            </div>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Why this matters</p>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
+          <div className="rounded-[2rem] border border-stone-200 bg-[#fffdf7] p-6 shadow-sm ring-1 ring-stone-200">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">Why this matters</p>
+            <div className="mt-3 scholarly-rule w-16" />
+            <ul className="mt-4 space-y-3 text-sm leading-7 text-stone-700">
               <li>Minh không cần học lại cả chương mà chỉ tập trung một chủ đề trước.</li>
               <li>Current goal này sẽ được mang sang learning path để chứng minh có cá nhân hóa.</li>
               <li>Tutor chat sẽ nhận đúng topic đang yếu thay vì trả lời chung chung.</li>
@@ -352,35 +361,35 @@ export default function AssessmentPage() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-h-40 flex-col justify-between rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-      <p className="max-w-[10ch] text-[11px] leading-5 font-semibold uppercase tracking-[0.12em] text-slate-400 sm:text-xs sm:tracking-[0.16em]">
+    <div className="flex min-h-40 flex-col justify-between rounded-2xl border border-[#faf7ef]/15 bg-[#faf7ef]/5 p-5 backdrop-blur">
+      <p className="max-w-[10ch] text-[11px] font-semibold uppercase leading-5 tracking-[0.22em] text-rose-300">
         {label}
       </p>
-      <p className="mt-4 text-2xl leading-tight font-bold text-white sm:text-3xl">{value}</p>
+      <p className="mt-4 font-display text-2xl font-bold leading-tight text-[#faf7ef] sm:text-3xl">{value}</p>
     </div>
   );
 }
 
 function badgeClasses(level: "weak" | "average" | "strong") {
   if (level === "weak") {
-    return "bg-rose-100 text-rose-700";
+    return "bg-rose-100 text-rose-900 ring-1 ring-rose-900/20";
   }
 
   if (level === "average") {
-    return "bg-amber-100 text-amber-700";
+    return "bg-amber-100 text-amber-800 ring-1 ring-amber-800/20";
   }
 
-  return "bg-emerald-100 text-emerald-700";
+  return "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-800/20";
 }
 
 function masteryBarClasses(score: number) {
   if (score >= 0.7) {
-    return "bg-emerald-500";
+    return "bg-emerald-700";
   }
 
   if (score >= 0.4) {
-    return "bg-amber-500";
+    return "bg-amber-700";
   }
 
-  return "bg-rose-500";
+  return "bg-rose-900";
 }

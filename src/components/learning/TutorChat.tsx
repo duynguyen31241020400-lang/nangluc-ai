@@ -118,25 +118,25 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
   }
 
   return (
-    <section className="flex h-full min-h-[28rem] flex-col rounded-[2rem] border border-slate-200 bg-white shadow-sm sm:min-h-[34rem]">
-      <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-50/70 px-5 py-3">
+    <section className="flex h-full min-h-[28rem] flex-col rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200 sm:min-h-[34rem]">
+      <div className="flex items-start justify-between gap-4 border-b border-stone-200 bg-stone-50/80 px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-900 ring-1 ring-rose-900/15">
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">AI Tutor</p>
-            <h2 className="text-base font-bold text-slate-900">{activeNode.shortLabel}</h2>
-            <p className="text-xs text-slate-500">Đang bám đúng topic Minh cần ưu tiên trước.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">AI Tutor</p>
+            <h2 className="font-display text-base font-bold text-stone-900">{activeNode.shortLabel}</h2>
+            <p className="text-xs text-stone-500">Đang bám đúng topic Minh cần ưu tiên trước.</p>
           </div>
         </div>
-        <div className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
-          {learnerContext.learnerName} - {learnerContext.learnerGrade}
+        <div className="rounded-2xl bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600 ring-1 ring-stone-200">
+          {learnerContext.learnerName} · {learnerContext.learnerGrade}
         </div>
       </div>
 
-      <div className="border-b border-slate-100 bg-white px-5 py-3 text-sm text-slate-600">
-        Điểm yếu hiện tại: <span className="font-semibold text-slate-900">{learnerContext.weakArea}</span>. Mục tiêu: <span className="font-semibold text-slate-900">{learnerContext.learnerTarget}</span>
+      <div className="border-b border-stone-200 bg-[#fffdf7] px-5 py-3 text-sm text-stone-600">
+        Điểm yếu hiện tại: <span className="font-semibold text-stone-900">{learnerContext.weakArea}</span>. Mục tiêu: <span className="font-semibold text-stone-900">{learnerContext.learnerTarget}</span>
       </div>
 
       <div ref={scrollRef} className="custom-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
@@ -149,16 +149,16 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             )}
           >
             {message.role === "tutor" ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-[10px] font-bold tracking-[0.18em] text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-900 to-stone-900 text-[10px] font-bold tracking-[0.18em] text-[#faf7ef] shadow-sm">
                 AI
               </div>
             ) : null}
             <div
               className={cn(
-                "max-w-[82%] break-words rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm",
+                "max-w-[82%] break-words rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm",
                 message.role === "tutor"
-                  ? "rounded-tl-md border border-slate-200 bg-slate-50 text-slate-700"
-                  : "rounded-tr-md bg-blue-600 text-white",
+                  ? "border border-stone-200 bg-stone-50 text-stone-700 ring-1 ring-stone-200"
+                  : "bg-rose-900 text-[#faf7ef] shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/20",
               )}
             >
               {message.role === "tutor" ? (
@@ -169,10 +169,10 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
                     ul: ({ children }) => <ul className="my-2 list-disc pl-5">{children}</ul>,
                     ol: ({ children }) => <ol className="my-2 list-decimal pl-5">{children}</ol>,
                     li: ({ children }) => <li className="my-1">{children}</li>,
-                    strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                    strong: ({ children }) => <strong className="font-semibold text-stone-900">{children}</strong>,
                     em: ({ children }) => <em className="italic">{children}</em>,
                     code: ({ children }) => (
-                      <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.95em] text-slate-800">
+                      <code className="rounded bg-stone-100 px-1.5 py-0.5 text-[0.95em] text-stone-800 ring-1 ring-stone-200">
                         {children}
                       </code>
                     ),
@@ -185,7 +185,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
               )}
             </div>
             {message.role === "user" ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-stone-100 text-stone-600 ring-1 ring-stone-200">
                 <User className="h-4 w-4" />
               </div>
             ) : null}
@@ -193,34 +193,34 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
         ))}
 
         {isLoading ? (
-          <div className="ml-12 flex items-center gap-1 text-sm text-slate-400">
-            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce" />
-            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:120ms]" />
-            <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:240ms]" />
+          <div className="ml-12 flex items-center gap-1 text-sm text-stone-400">
+            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce" />
+            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce [animation-delay:120ms]" />
+            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce [animation-delay:240ms]" />
           </div>
         ) : null}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-slate-100 p-4">
-        <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-inner">
+      <form onSubmit={handleSubmit} className="border-t border-stone-200 p-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-2 shadow-inner ring-1 ring-stone-200">
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder={`Hỏi về ${activeNode.shortLabel.toLowerCase()} hoặc nhờ tutor gợi ý bước tiếp theo...`}
-            className="h-11 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            className="h-11 flex-1 bg-transparent text-sm text-stone-700 outline-none placeholder:text-stone-400"
             maxLength={500}
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-900 text-[#faf7ef] transition hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>
         </div>
         {input.length >= 400 ? (
-          <p className={cn("pt-2 pr-4 text-right text-[11px]", input.length >= 480 ? "text-amber-600" : "text-slate-400")}>
+          <p className={cn("pt-2 pr-4 text-right text-[11px]", input.length >= 480 ? "text-amber-700" : "text-stone-400")}>
             {input.length}/500
           </p>
         ) : null}

@@ -1,12 +1,15 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --card: #ffffff;
-  --border: #e2e8f0;
-  --ring: #2563eb;
+  /* Biên Khảo — Scholarly Print-Media palette */
+  --background: #faf7ef;     /* parchment */
+  --foreground: #1c1917;     /* ink (stone-900) */
+  --muted: #78716c;          /* stone-500 */
+  --card: #fffdf7;           /* warm white */
+  --border: #e7e5e4;         /* stone-200 */
+  --ring: #881337;           /* oxblood (rose-900) */
+  --accent: #b45309;         /* brass (amber-700) */
+  --secondary: #172554;      /* deep navy (blue-950) */
 }
 
 * {
@@ -34,17 +37,52 @@ textarea {
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #0f172a;
+  background: #fecdd3; /* rose-200 */
+  color: #1c1917;
 }
 
 .text-balance {
   text-wrap: balance;
 }
 
+/* Serif display font helper — used on H1/H2 for scholarly/print feel */
+.font-display {
+  font-family: var(--font-display), "Fraunces", "Newsreader", Georgia, "Times New Roman", serif;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.01em;
+}
+
+/* Drop cap for opening paragraph — like print magazines */
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-display), "Fraunces", Georgia, serif;
+  font-size: 4.25rem;
+  line-height: 0.9;
+  padding: 0.35rem 0.65rem 0 0;
+  color: #881337;
+  font-weight: 700;
+}
+
+/* Dot grid pattern utility — scholarly learning-nodes motif */
+.dot-grid {
+  background-image: radial-gradient(rgba(28, 25, 23, 0.18) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 0;
+}
+
+.dot-grid-faint {
+  background-image: radial-gradient(rgba(250, 247, 239, 0.14) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Thin scholarly rule */
+.scholarly-rule {
+  border-top: 1px solid #d6d3d1;
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #94a3b8 transparent;
+  scrollbar-color: #a8a29e transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -57,9 +95,9 @@ textarea {
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: linear-gradient(180deg, #93c5fd 0%, #64748b 100%);
+  background: linear-gradient(180deg, #fecdd3 0%, #881337 100%);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #60a5fa 0%, #475569 100%);
+  background: linear-gradient(180deg, #fda4af 0%, #9f1239 100%);
 }
