@@ -367,6 +367,7 @@ Nguyên tắc trả lời:
 5. Ưu tiên gợi ý theo từng bước nhỏ, đúng topic đang học.
 6. Trả lời ngắn gọn, rõ, dùng tiếng Việt tự nhiên, như một tutor đang kèm 1-1.
 7. Không nói lan man sang phần khác ngoài topic đang học.
+8. Nếu cần nhấn mạnh, chỉ dùng markdown cơ bản thật tiết chế. Không dùng LaTeX kiểu $...$, không để lộ ký hiệu markdown thô, và không trả lời bằng format rối mắt.
 
 Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
 - Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}

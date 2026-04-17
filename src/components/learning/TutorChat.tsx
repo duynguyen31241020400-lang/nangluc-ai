@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send, Sparkles, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { LearningNode } from "@/src/lib/data/competition";
 import { cn } from "@/src/lib/utils";
 
@@ -153,13 +155,34 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             ) : null}
             <div
               className={cn(
-                "max-w-[82%] rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm",
+                "max-w-[82%] break-words rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm",
                 message.role === "tutor"
                   ? "rounded-tl-md border border-slate-200 bg-slate-50 text-slate-700"
                   : "rounded-tr-md bg-blue-600 text-white",
               )}
             >
-              {message.content}
+              {message.role === "tutor" ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="my-2 list-disc pl-5">{children}</ul>,
+                    ol: ({ children }) => <ol className="my-2 list-decimal pl-5">{children}</ol>,
+                    li: ({ children }) => <li className="my-1">{children}</li>,
+                    strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                    em: ({ children }) => <em className="italic">{children}</em>,
+                    code: ({ children }) => (
+                      <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.95em] text-slate-800">
+                        {children}
+                      </code>
+                    ),
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              ) : (
+                message.content
+              )}
             </div>
             {message.role === "user" ? (
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600">
