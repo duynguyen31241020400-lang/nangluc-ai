@@ -171,7 +171,7 @@ export default function LearnMathPage() {
             </div>
 
             <TutorChat
-                key={report.demoScenarioId ?? report.generatedAt}
+                key={report.demoScenarioId ?? "assessment-flow"}
                 activeNode={activeNode}
                 learnerContext={learnerContext}
               />

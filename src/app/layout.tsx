@@ -1,10 +1,8 @@
 ﻿import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 import ErrorBoundary from "@/src/components/ui/ErrorBoundary";
-import FeedbackButton from "@/src/components/ui/FeedbackButton";
 
 const inter = Inter({ subsets: ["latin", "vietnamese"] });
 
@@ -23,19 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={inter.className}>
         <ErrorBoundary>
           {children}
-          {process.env.NODE_ENV !== "production" && <FeedbackButton />}
         </ErrorBoundary>
-        <Script id="lumiq-service-worker" strategy="afterInteractive">
-          {`
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function () {
-                navigator.serviceWorker.register('/sw.js').catch(function () {
-                  // Competition prototype: best effort only.
-                });
-              });
-            }
-          `}
-        </Script>
       </body>
     </html>
   );
