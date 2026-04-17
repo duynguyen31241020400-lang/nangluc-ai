@@ -103,7 +103,7 @@ export default function AssessmentPage() {
             </Link>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-blue-200">
               <Sparkles className="h-4 w-4" />
-              Assessment 6 câu, 3 competency, 1 output cá nhân hóa
+              Assessment 6 câu, 3 nhóm, 1 output cá nhân hóa
             </div>
             <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">
               Bài chẩn đoán đầu vào của Lumiq AI
@@ -113,7 +113,7 @@ export default function AssessmentPage() {
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <InfoCard label="Số câu" value="6 câu" />
-              <InfoCard label="Competency" value="3 nhóm" />
+              <InfoCard label="Nhóm" value="3 nhóm" />
               <InfoCard label="Thời lượng" value="8 phút" />
               <InfoCard label="Tâm lý" value="Không tính điểm" />
             </div>
@@ -134,7 +134,7 @@ export default function AssessmentPage() {
               <div className="mt-6 rounded-3xl bg-slate-50 p-5">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Outcome</p>
                 <ul className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
-                  <li>Biết ngay competency yếu nhất.</li>
+                  <li>Biết ngay nhóm yếu nhất.</li>
                   <li>Nhận current goal để vào lộ trình học.</li>
                   <li>Tutor sau đó trả lời theo đúng topic vừa được khuyến nghị.</li>
                 </ul>
@@ -339,7 +339,7 @@ export default function AssessmentPage() {
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Why this matters</p>
             <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
-              <li>Minh không cần học lại cả chương mà chỉ tập trung một competency trước.</li>
+              <li>Minh không cần học lại cả chương mà chỉ tập trung một nhóm trước.</li>
               <li>Current goal này sẽ được mang sang learning path để chứng minh có cá nhân hóa.</li>
               <li>Tutor chat sẽ nhận đúng topic đang yếu thay vì trả lời chung chung.</li>
             </ul>

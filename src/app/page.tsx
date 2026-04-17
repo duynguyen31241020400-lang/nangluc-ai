@@ -6,7 +6,7 @@ import { ArrowRight, CheckCircle2, BrainCircuit, Sparkles, Target } from "lucide
 const featureCards = [
   {
     title: "Đánh giá nhanh, đúng chỗ",
-    description: "Assessment 6 câu giúp học sinh biết mình yếu đúng competency nào thay vì học lại cả chương.",
+    description: "Assessment 6 câu giúp học sinh biết mình yếu đúng nhóm nào thay vì học lại cả chương.",
     icon: Target,
   },
   {
