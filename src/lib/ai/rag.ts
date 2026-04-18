@@ -127,6 +127,12 @@ function isRetryableTutorError(error: unknown) {
   return RETRYABLE_TUTOR_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
+function sanitizeTutorText(text: string) {
+  return text
+    .replace(/^(?:tutor|ai tutor|assistant|giao vien|hoc sinh)\s*:\s*/i, "")
+    .trim();
+}
+
 function getTutorModelCandidates() {
   const configuredFallbackModel = process.env.GEMINI_FALLBACK_CHAT_MODEL?.trim();
   const defaultFallbackModel = CHAT_MODEL === "gemini-2.5-flash" ? "gemini-2.5-flash-lite" : "gemini-2.5-flash";
@@ -391,6 +397,7 @@ Nguyên tắc trả lời:
 7. Không nói lan man sang phần khác ngoài topic đang học.
 8. Nếu cần nhấn mạnh, chỉ dùng markdown cơ bản thật tiết chế. Không dùng LaTeX kiểu $...$, không để lộ ký hiệu markdown thô, và không trả lời bằng format rối mắt.
 9. Nếu học sinh hỏi Lumiq AI build trên model nào hoặc hỏi về Singularity, câu trả lời đầu tiên phải chứa luôn triết lý Singularity, không được chỉ giới thiệu chung chung rồi mới nói sau. Ưu tiên câu mở đầu theo hướng này: "Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity - lấy cảm hứng từ singularity trong khoa học vũ trụ như một điểm hội tụ rất mạnh - để tối ưu hóa và cá nhân hóa lộ trình học cho Minh."
+10. Không bao giờ tự thêm prefix kiểu "Tutor:", "AI Tutor:" hay "Assistant:" ở đầu câu trả lời.
 
 Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
 - Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}
@@ -559,7 +566,7 @@ async function requestTutorModelResponse(model: string, input: TutorRequestPaylo
     },
   });
 
-  const text = response.text?.trim();
+  const text = sanitizeTutorText(response.text?.trim() ?? "");
   if (!text) {
     throw new Error(`Gemini returned empty text for model ${model}.`);
   }
