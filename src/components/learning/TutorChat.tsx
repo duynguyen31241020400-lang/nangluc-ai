@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send, Sparkles, User } from "lucide-react";
@@ -119,9 +119,9 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
 
   return (
     <section className="flex h-full min-h-[28rem] flex-col rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200 sm:min-h-[34rem]">
-      <div className="flex items-start justify-between gap-4 border-b border-stone-200 bg-stone-50/80 px-5 py-3">
+      <div className="flex items-start justify-between gap-4 border-b border-stone-200 bg-stone-50 px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-900 ring-1 ring-rose-900/15">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-900 to-stone-800 text-[#faf7ef]">
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
@@ -135,7 +135,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
         </div>
       </div>
 
-      <div className="border-b border-stone-200 bg-[#fffdf7] px-5 py-3 text-sm text-stone-600">
+      <div className="border-b border-stone-100 bg-[#fffdf7] px-5 py-3 text-sm text-stone-600">
         Điểm yếu hiện tại: <span className="font-semibold text-stone-900">{learnerContext.weakArea}</span>. Mục tiêu: <span className="font-semibold text-stone-900">{learnerContext.learnerTarget}</span>
       </div>
 
@@ -149,16 +149,16 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
             )}
           >
             {message.role === "tutor" ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-900 to-stone-900 text-[10px] font-bold tracking-[0.18em] text-[#faf7ef] shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-900 to-stone-800 text-[10px] font-bold tracking-[0.18em] text-[#faf7ef]">
                 AI
               </div>
             ) : null}
             <div
               className={cn(
-                "max-w-[82%] break-words rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm",
+                "max-w-[82%] break-words rounded-[2rem] px-4 py-3 text-sm leading-7 shadow-sm",
                 message.role === "tutor"
-                  ? "border border-stone-200 bg-stone-50 text-stone-700 ring-1 ring-stone-200"
-                  : "bg-rose-900 text-[#faf7ef] shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/20",
+                  ? "rounded-tl-md border border-stone-200 bg-stone-50 text-stone-700"
+                  : "rounded-tr-md bg-rose-900 text-[#faf7ef]",
               )}
             >
               {message.role === "tutor" ? (
@@ -172,7 +172,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
                     strong: ({ children }) => <strong className="font-semibold text-stone-900">{children}</strong>,
                     em: ({ children }) => <em className="italic">{children}</em>,
                     code: ({ children }) => (
-                      <code className="rounded bg-stone-100 px-1.5 py-0.5 text-[0.95em] text-stone-800 ring-1 ring-stone-200">
+                      <code className="rounded bg-stone-200 px-1.5 py-0.5 text-[0.95em] text-stone-800">
                         {children}
                       </code>
                     ),
@@ -185,7 +185,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
               )}
             </div>
             {message.role === "user" ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-stone-100 text-stone-600 ring-1 ring-stone-200">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-200 text-stone-600">
                 <User className="h-4 w-4" />
               </div>
             ) : null}
@@ -194,15 +194,15 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
 
         {isLoading ? (
           <div className="ml-12 flex items-center gap-1 text-sm text-stone-400">
-            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce" />
-            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce [animation-delay:120ms]" />
-            <span className="h-2 w-2 rounded-full bg-rose-300 animate-bounce [animation-delay:240ms]" />
+            <span className="h-2 w-2 rounded-full bg-stone-300 animate-bounce" />
+            <span className="h-2 w-2 rounded-full bg-stone-300 animate-bounce [animation-delay:120ms]" />
+            <span className="h-2 w-2 rounded-full bg-stone-300 animate-bounce [animation-delay:240ms]" />
           </div>
         ) : null}
       </div>
 
       <form onSubmit={handleSubmit} className="border-t border-stone-200 p-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-2 shadow-inner ring-1 ring-stone-200">
+        <div className="flex items-center gap-3 rounded-2xl border border-stone-300 bg-stone-50 px-4 py-2 shadow-inner ring-1 ring-stone-200">
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}

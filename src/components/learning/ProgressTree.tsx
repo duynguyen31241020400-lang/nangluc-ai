@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CheckCircle2, Sparkles } from "lucide-react";
 import type { LearningNode } from "@/src/lib/data/competition";
@@ -26,10 +26,10 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
             onClick={() => onNodeClick(node)}
             title={node.status === "available" ? "Học sau khi xong mục tiêu hiện tại" : undefined}
             className={cn(
-              "group relative w-full rounded-[2rem] border p-5 text-left transition",
+              "group relative w-full rounded-2xl border p-5 text-left transition",
               isActiveCard
-                ? "border-rose-900/20 bg-rose-50/80 shadow-xl shadow-rose-900/10 ring-1 ring-rose-900/10"
-                : "border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200 hover:border-rose-900/20 hover:bg-rose-50/30",
+                ? "border-rose-900 bg-rose-50 shadow-md shadow-rose-900/10 ring-1 ring-rose-900/20"
+                : "border-stone-200 bg-[#fffdf7] hover:border-rose-900/40 hover:bg-rose-50/30 hover:shadow-sm",
             )}
           >
             {index !== nodes.length - 1 ? (
@@ -40,9 +40,9 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
               <div
                 className={cn(
                   "mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border text-sm font-bold",
-                  node.status === "completed" && "border-emerald-200 bg-emerald-50 text-emerald-800",
-                  node.status === "active" && "border-rose-900 bg-rose-900 text-[#faf7ef]",
-                  node.status === "available" && "border-stone-200 bg-stone-100 text-stone-600",
+                  node.status === "completed" && "border-emerald-700/30 bg-emerald-50 text-emerald-700",
+                  node.status === "active" && "border-rose-900/40 bg-rose-900 text-[#faf7ef]",
+                  node.status === "available" && "border-stone-300 bg-stone-100 text-stone-500",
                 )}
               >
                 {node.status === "completed" ? (
@@ -59,20 +59,20 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-900">{node.code}</p>
                     <h3 className="mt-1 font-display text-xl font-bold text-stone-900">{node.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-stone-700">{node.description}</p>
+                    <p className="mt-2 text-sm leading-6 text-stone-600">{node.description}</p>
                   </div>
                   <div className={cn(
-                    "inline-flex shrink-0 rounded-2xl px-3 py-1 text-xs font-semibold ring-1",
-                    node.status === "completed" && "bg-emerald-100 text-emerald-800 ring-emerald-800/15",
-                    node.status === "active" && "bg-rose-100 text-rose-900 ring-rose-900/15",
-                    node.status === "available" && "bg-stone-100 text-stone-600 ring-stone-200",
+                    "inline-flex shrink-0 rounded-2xl px-3 py-1 text-xs font-semibold",
+                    node.status === "completed" && "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-800/15",
+                    node.status === "active" && "bg-rose-100 text-rose-900 ring-1 ring-rose-900/20",
+                    node.status === "available" && "bg-stone-100 text-stone-600 ring-1 ring-stone-200",
                   )}>
                     {node.isCurrentGoal ? "Current goal" : node.status === "completed" ? "Đã vững" : "Học sau"}
                   </div>
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
                     <span>Mastery</span>
                     <span className={cn(node.status === "active" && "text-rose-900")}>{masteryPercent}%</span>
                   </div>
@@ -85,7 +85,7 @@ export default function ProgressTree({ nodes, activeNodeId, onNodeClick }: Progr
                       style={{ width: `${masteryPercent}%` }}
                     />
                   </div>
-                  <p className="text-sm leading-6 text-stone-600">{helperText}</p>
+                  <p className="text-sm leading-6 text-stone-500">{helperText}</p>
                 </div>
               </div>
             </div>
