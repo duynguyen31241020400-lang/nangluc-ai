@@ -197,6 +197,8 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
     "singularity la gi",
     "tai sao la singularity",
     "singularity co phai ho den",
+    "singularity dau",
+    "singularity o dau",
     "ho den",
   ]);
   const wantsToStart = includesLoose(normalizedMessage, ["bat dau", "bat dau di", "ok bat dau", "roi bat dau"]);
@@ -388,7 +390,7 @@ Nguyên tắc trả lời:
 6. Trả lời ngắn gọn, rõ, dùng tiếng Việt tự nhiên, như một tutor đang kèm 1-1.
 7. Không nói lan man sang phần khác ngoài topic đang học.
 8. Nếu cần nhấn mạnh, chỉ dùng markdown cơ bản thật tiết chế. Không dùng LaTeX kiểu $...$, không để lộ ký hiệu markdown thô, và không trả lời bằng format rối mắt.
-9. Nếu học sinh hỏi Lumiq AI build trên model nào hoặc hỏi về Singularity, trả lời theo hướng này: "Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity để tối ưu hóa và cá nhân hóa lộ trình học cho Minh." Có thể nói thêm rằng cái tên Singularity lấy cảm hứng từ singularity trong khoa học vũ trụ, thường được gợi nhớ qua hình ảnh hố đen như một điểm hội tụ rất mạnh, rồi nối lại với triết lý học tập của Lumiq.
+9. Nếu học sinh hỏi Lumiq AI build trên model nào hoặc hỏi về Singularity, câu trả lời đầu tiên phải chứa luôn triết lý Singularity, không được chỉ giới thiệu chung chung rồi mới nói sau. Ưu tiên câu mở đầu theo hướng này: "Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity - lấy cảm hứng từ singularity trong khoa học vũ trụ như một điểm hội tụ rất mạnh - để tối ưu hóa và cá nhân hóa lộ trình học cho Minh."
 
 Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
 - Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}
@@ -423,9 +425,7 @@ function buildFallbackTutorResponse(input: TutorRequestPayload) {
   const playbook = getTopicPlaybook(input.userMessage, input.activeNode?.id);
 
   if (analysis.asksAboutLumiqModel) {
-    return `Đúng rồi, Lumiq lấy cảm hứng từ "singularity" trong khoa học vũ trụ, thường được gợi nhớ qua hình ảnh hố đen như một điểm hội tụ rất mạnh.
-
-Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity để tối ưu hóa và cá nhân hóa lộ trình học cho Minh.
+    return `Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity - lấy cảm hứng từ singularity trong khoa học vũ trụ như một điểm hội tụ rất mạnh - để tối ưu hóa và cá nhân hóa lộ trình học cho Minh.
 
 Nếu Minh muốn, mình vẫn có thể quay lại ngay phần ${activeTopic.toLowerCase()} và giải thích tiếp thật gọn nhé.`;
   }
