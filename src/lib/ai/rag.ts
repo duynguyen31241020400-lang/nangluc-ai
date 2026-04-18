@@ -44,6 +44,7 @@ interface StudentMessageAnalysis {
   normalizedMessage: string;
   lastTutorQuestion: string | null;
   isMetaQuestion: boolean;
+  asksAboutLumiqModel: boolean;
   wantsToStart: boolean;
   wantsRephrase: boolean;
   wantsExample: boolean;
@@ -186,6 +187,14 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
   const normalizedMessage = normalizeLooseText(input.userMessage);
   const lastTutorQuestion = getLastTutorQuestion(input.history ?? []);
   const isMetaQuestion = includesLoose(normalizedMessage, ["model gi", "ban la ai", "ai vay"]);
+  const asksAboutLumiqModel = includesLoose(normalizedMessage, [
+    "lumiq duoc build tren model gi",
+    "lumiq build tren model gi",
+    "lumiq la model gi",
+    "lumiq dung model gi",
+    "gemini hay chat gpt",
+    "la gemini hay chat gpt",
+  ]);
   const wantsToStart = includesLoose(normalizedMessage, ["bat dau", "bat dau di", "ok bat dau", "roi bat dau"]);
   const wantsRephrase = includesLoose(normalizedMessage, [
     "chua hieu",
@@ -217,6 +226,7 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
   ]);
   const isAttemptingAnswer =
     !isMetaQuestion &&
+    !asksAboutLumiqModel &&
     !wantsRephrase &&
     (asksYesNoConfirmation || Boolean(lastTutorQuestion) || normalizedMessage.split(" ").length >= 5);
 
@@ -224,6 +234,9 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
 
   if (isMetaQuestion) {
     interpretationParts.push("Học sinh đang hỏi meta về tutor.");
+  }
+  if (asksAboutLumiqModel) {
+    interpretationParts.push("Học sinh đang hỏi Lumiq AI được build trên model nào.");
   }
   if (wantsToStart) {
     interpretationParts.push("Học sinh muốn bắt đầu ngay.");
@@ -250,7 +263,9 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
 
   let tutoringMove = "Trả lời trực tiếp câu hỏi hiện tại bằng tiếng Việt tự nhiên, ngắn gọn và bám đúng topic.";
 
-  if (wantsToStart) {
+  if (asksAboutLumiqModel) {
+    tutoringMove = "Trả lời ngắn gọn theo lore của Lumiq AI, sau đó kéo lại rất nhẹ về bài học hiện tại nếu phù hợp.";
+  } else if (wantsToStart) {
     tutoringMove = "Đừng hỏi ngược ngay. Hãy khởi động bài học bằng một bước đầu tiên rất đơn giản rồi mới hỏi kiểm tra hiểu.";
   } else if (wantsRephrase) {
     tutoringMove = "Đổi cách giải thích, tránh lặp lại ví dụ hoặc câu mở đầu cũ. Bắt đầu từ phần dễ hiểu đời thường hơn rồi mới nối về khái niệm Toán.";
@@ -270,6 +285,7 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
     normalizedMessage,
     lastTutorQuestion,
     isMetaQuestion,
+    asksAboutLumiqModel,
     wantsToStart,
     wantsRephrase,
     wantsExample,
@@ -368,6 +384,7 @@ Nguyên tắc trả lời:
 6. Trả lời ngắn gọn, rõ, dùng tiếng Việt tự nhiên, như một tutor đang kèm 1-1.
 7. Không nói lan man sang phần khác ngoài topic đang học.
 8. Nếu cần nhấn mạnh, chỉ dùng markdown cơ bản thật tiết chế. Không dùng LaTeX kiểu $...$, không để lộ ký hiệu markdown thô, và không trả lời bằng format rối mắt.
+9. Nếu học sinh hỏi Lumiq AI build trên model nào, trả lời theo lore này: "Lumiq AI là model được phát triển bởi team Lumiq AI thuộc CLB Start Innova của UEH.ISB, dựa trên triết lí Singularity để tối ưu hóa và cá nhân hóa cho dạng bài học của Minh." Có thể nói ngắn gọn, tự nhiên hơn một chút nhưng phải giữ đúng ý này.
 
 Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
 - Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}
@@ -400,6 +417,12 @@ function buildFallbackTutorResponse(input: TutorRequestPayload) {
   const normalizedMessage = input.userMessage.trim().toLowerCase();
   const analysis = analyzeStudentMessage(input);
   const playbook = getTopicPlaybook(input.userMessage, input.activeNode?.id);
+
+  if (analysis.asksAboutLumiqModel) {
+    return `Lumiq AI là model được phát triển bởi team Lumiq AI thuộc CLB Start Innova của UEH.ISB, dựa trên triết lí Singularity để tối ưu hóa và cá nhân hóa cho dạng bài học của Minh.
+
+Nếu Minh muốn, mình vẫn có thể quay lại ngay phần ${activeTopic.toLowerCase()} và giải thích tiếp thật gọn nhé.`;
+  }
 
   if (analysis.isMetaQuestion) {
     return `Mình là AI Tutor của Lumiq AI, đang hỗ trợ Minh ở phần ${activeTopic.toLowerCase()}.
