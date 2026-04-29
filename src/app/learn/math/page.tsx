@@ -2,7 +2,7 @@
 
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BrainCircuit, CheckCircle2, Flame, Target } from "lucide-react";
+import { ArrowLeft, BrainCircuit, CheckCircle2, Flame, SlidersHorizontal, X } from "lucide-react";
 import ProgressTree, { type CompetencyNode } from "@/src/components/learning/ProgressTree";
 import TutorChat from "@/src/components/learning/TutorChat";
 import DotGrid from "@/src/components/ui/DotGrid";
@@ -19,6 +19,7 @@ import { getOrCreateDemoReport, loadScenarioReport } from "@/src/lib/demo-state"
 export default function LearnMathPage() {
   const [report, setReport] = useState<AssessmentReport | null>(null);
   const [activeNode, setActiveNode] = useState<CompetencyNode | null>(null);
+  const [showScenarioPopup, setShowScenarioPopup] = useState(false);
 
   useEffect(() => {
     const initialReport = getOrCreateDemoReport();
@@ -57,6 +58,7 @@ export default function LearnMathPage() {
   const recommended = report.results.find((item) => item.competencyId === report.recommendedCompetencyId);
 
   return (
+    <>
     <main className="min-h-screen bg-[#faf7ef] px-6 py-8 text-stone-900">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="relative flex flex-col gap-5 overflow-hidden rounded-[2rem] border border-stone-200 bg-[#fffdf7] p-5 shadow-sm ring-1 ring-stone-200 lg:flex-row lg:items-start lg:justify-between">
@@ -110,34 +112,20 @@ export default function LearnMathPage() {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-stone-200 bg-[#fffdf7] p-6 shadow-sm ring-1 ring-stone-200">
-              <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-rose-900" />
-                <h2 className="font-display text-lg font-bold">Đổi trạng thái personalized output</h2>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-stone-700">
-                Hai kịch bản dưới đây giúp team rehearsal nhanh và chứng minh rõ current goal đổi theo kết quả assessment.
-              </p>
-              <div className="mt-4 space-y-3">
-                {DEMO_SCENARIOS.map((scenario) => {
-                  const isActive = report.demoScenarioId === scenario.id;
-                  return (
-                    <button
-                      key={scenario.id}
-                      onClick={() => switchScenario(scenario.id, setReport, setActiveNode)}
-                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                        isActive
-                          ? "border-rose-900 bg-rose-50 text-rose-900 ring-1 ring-rose-900/15"
-                          : "border-stone-200 bg-stone-50 text-stone-700 hover:border-rose-900/40 hover:bg-rose-50/40"
-                      }`}
-                    >
-                      <p className="font-display text-sm font-bold">{scenario.title}</p>
-                      <p className="mt-1 text-sm leading-6">{scenario.description}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <button
+              onClick={() => setShowScenarioPopup(true)}
+              className="flex w-full items-center justify-between rounded-[2rem] border border-stone-200 bg-[#fffdf7] px-5 py-3.5 shadow-sm ring-1 ring-stone-200 transition hover:border-rose-900/40 hover:text-rose-900"
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold text-stone-700">
+                <SlidersHorizontal className="h-4 w-4 text-rose-900" />
+                Kịch bản demo
+              </span>
+              <span className="rounded-xl bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
+                {report.demoScenarioId
+                  ? DEMO_SCENARIOS.find((s) => s.id === report.demoScenarioId)?.title
+                  : "Chưa chọn"}
+              </span>
+            </button>
 
             <div className="relative overflow-hidden rounded-[2rem] border border-rose-900 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 p-6 text-[#faf7ef] shadow-xl shadow-stone-900/20">
               <DotGrid variant="light" />
@@ -192,6 +180,57 @@ export default function LearnMathPage() {
         </div>
       </div>
     </main>
+
+    {showScenarioPopup && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm"
+        onClick={() => setShowScenarioPopup(false)}
+      >
+        <div
+          className="mx-4 w-full max-w-sm rounded-[2rem] border border-stone-200 bg-[#fffdf7] p-6 shadow-2xl ring-1 ring-stone-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-5 w-5 text-rose-900" />
+              <h2 className="font-display text-lg font-bold">Kịch bản demo</h2>
+            </div>
+            <button
+              onClick={() => setShowScenarioPopup(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition hover:bg-stone-200"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            Chứng minh current goal đổi theo kết quả assessment.
+          </p>
+          <div className="mt-4 space-y-3">
+            {DEMO_SCENARIOS.map((scenario) => {
+              const isActive = report.demoScenarioId === scenario.id;
+              return (
+                <button
+                  key={scenario.id}
+                  onClick={() => {
+                    switchScenario(scenario.id, setReport, setActiveNode);
+                    setShowScenarioPopup(false);
+                  }}
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                    isActive
+                      ? "border-rose-900 bg-rose-50 text-rose-900 ring-1 ring-rose-900/15"
+                      : "border-stone-200 bg-stone-50 text-stone-700 hover:border-rose-900/40 hover:bg-rose-50/40"
+                  }`}
+                >
+                  <p className="font-display text-sm font-bold">{scenario.title}</p>
+                  <p className="mt-1 text-sm leading-6">{scenario.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
 

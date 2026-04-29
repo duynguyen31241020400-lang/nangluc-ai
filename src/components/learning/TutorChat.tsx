@@ -118,7 +118,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
   }
 
   return (
-    <section className="flex h-full min-h-[28rem] flex-col rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200 sm:min-h-[34rem]">
+    <section className="flex h-[32rem] flex-col rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200">
       <div className="flex items-start justify-between gap-4 border-b border-stone-200 bg-stone-50 px-5 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-900 to-stone-800 text-[#faf7ef]">
