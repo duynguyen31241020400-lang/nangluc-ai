@@ -17,7 +17,7 @@ interface LearnerContext {
   recommendedAction: string;
 }
 
-interface Message {
+export interface ChatMessage {
   role: "user" | "tutor";
   content: string;
 }
@@ -25,27 +25,18 @@ interface Message {
 interface TutorChatProps {
   activeNode: LearningNode;
   learnerContext: LearnerContext;
+  messages: ChatMessage[];
+  onMessagesChange: (messages: ChatMessage[] | ((current: ChatMessage[]) => ChatMessage[])) => void;
 }
 
-function buildGreeting(context: LearnerContext) {
+export function buildTutorGreeting(context: LearnerContext) {
   return `Chào ${context.learnerName}! Hiện tại mình đang bám vào ${context.activeTopic.toLowerCase()} vì đây là chỗ Minh cần ưu tiên nhất. Mục tiêu ngắn hạn là: ${context.shortGoal}`;
 }
 
-function buildFocusNudge(context: LearnerContext, node: LearningNode) {
-  return `Đã chuyển sang ${node.title.toLowerCase()}. Mình sẽ giữ câu trả lời bám đúng topic này và nhắc Minh tập trung vào: ${context.recommendedAction}`;
-}
-
-export default function TutorChat({ activeNode, learnerContext }: TutorChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "tutor",
-      content: buildGreeting(learnerContext),
-    },
-  ]);
+export default function TutorChat({ activeNode, learnerContext, messages, onMessagesChange }: TutorChatProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const previousNodeId = useRef(activeNode.id);
 
   useEffect(() => {
     if (!scrollRef.current) {
@@ -54,21 +45,6 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
 
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
-
-  useEffect(() => {
-    if (previousNodeId.current === activeNode.id) {
-      return;
-    }
-
-    previousNodeId.current = activeNode.id;
-    setMessages((current) => [
-      ...current,
-      {
-        role: "tutor",
-        content: buildFocusNudge(learnerContext, activeNode),
-      },
-    ]);
-  }, [activeNode, learnerContext]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,7 +55,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
     }
 
     const nextHistory = [...messages, { role: "user" as const, content: trimmed }];
-    setMessages(nextHistory);
+    onMessagesChange(nextHistory);
     setInput("");
     setIsLoading(true);
 
@@ -96,7 +72,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
       });
 
       const data = await response.json();
-      setMessages((current) => [
+      onMessagesChange((current) => [
         ...current,
         {
           role: "tutor",
@@ -105,7 +81,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
       ]);
     } catch (error) {
       console.error("Tutor chat error", error);
-      setMessages((current) => [
+      onMessagesChange((current) => [
         ...current,
         {
           role: "tutor",
@@ -118,7 +94,7 @@ export default function TutorChat({ activeNode, learnerContext }: TutorChatProps
   }
 
   return (
-    <section className="flex h-[32rem] flex-col rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-[#fffdf7] shadow-sm ring-1 ring-stone-200">
       <div className="flex items-start justify-between gap-4 border-b border-stone-200 bg-stone-50 px-5 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-900 to-stone-800 text-[#faf7ef]">
