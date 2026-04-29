@@ -8,6 +8,20 @@ coverage/
 .env*
 !.env.example
 
+# Local runtime/tool installers - keep the repo source-only
+*.exe
+*.msi
+corepack
+corepack.cmd
+install_tools.bat
+nodevars.bat
+npm
+npm.cmd
+npm.ps1
+npx
+npx.cmd
+npx.ps1
+
 # Large SQL seed files (not needed in repo)
 seed_knowledge*.sql
 seed_formatted_part*.sql
