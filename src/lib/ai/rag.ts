@@ -51,6 +51,7 @@ interface StudentMessageAnalysis {
   wantsEverydayExample: boolean;
   wantsClassroomExample: boolean;
   asksYesNoConfirmation: boolean;
+  resistsLearning: boolean;
   isAttemptingAnswer: boolean;
   mentionsUncertainty: boolean;
   interpretation: string;
@@ -228,6 +229,18 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
     "co phai",
     "ok khong",
   ]);
+  const resistsLearning = includesLoose(normalizedMessage, [
+    "khong hoc",
+    "khong hoc dau",
+    "khong muon hoc",
+    "doi roi khong hoc",
+    "bo di",
+    "thoi khoi",
+    "met qua",
+    "chan qua",
+    "luoi hoc",
+    "ngai hoc",
+  ]);
   const mentionsUncertainty = includesLoose(normalizedMessage, [
     "hinh nhu",
     "khong chac",
@@ -240,6 +253,7 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
     !isMetaQuestion &&
     !asksAboutLumiqModel &&
     !wantsRephrase &&
+    !resistsLearning &&
     (asksYesNoConfirmation || Boolean(lastTutorQuestion) || normalizedMessage.split(" ").length >= 5);
 
   const interpretationParts: string[] = [];
@@ -269,13 +283,18 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
   if (asksYesNoConfirmation) {
     interpretationParts.push("Học sinh muốn xác nhận đúng/sai ngay.");
   }
+  if (resistsLearning) {
+    interpretationParts.push("Học sinh đang né học, chán học hoặc từ chối tiếp tục.");
+  }
   if (mentionsUncertainty) {
     interpretationParts.push("Học sinh chưa chắc cách diễn đạt của mình có chuẩn hay không.");
   }
 
   let tutoringMove = "Trả lời trực tiếp câu hỏi hiện tại bằng tiếng Việt tự nhiên, ngắn gọn và bám đúng topic.";
 
-  if (asksAboutLumiqModel) {
+  if (resistsLearning) {
+    tutoringMove = "Đừng ép làm ví dụ ngay. Công nhận cảm giác không muốn học, giảm áp lực, rồi rủ học sinh chọn một bước siêu nhỏ trong 30 giây hoặc nghỉ/đổi cách học.";
+  } else if (asksAboutLumiqModel) {
     tutoringMove = "Trả lời ngắn gọn theo lore của Lumiq AI, sau đó kéo lại rất nhẹ về bài học hiện tại nếu phù hợp.";
   } else if (wantsToStart) {
     tutoringMove = "Đừng hỏi ngược ngay. Hãy khởi động bài học bằng một bước đầu tiên rất đơn giản rồi mới hỏi kiểm tra hiểu.";
@@ -304,6 +323,7 @@ function analyzeStudentMessage(input: TutorRequestPayload): StudentMessageAnalys
     wantsEverydayExample,
     wantsClassroomExample,
     asksYesNoConfirmation,
+    resistsLearning,
     isAttemptingAnswer,
     mentionsUncertainty,
     interpretation: interpretationParts.join(" "),
@@ -398,6 +418,7 @@ Nguyên tắc trả lời:
 8. Nếu cần nhấn mạnh, chỉ dùng markdown cơ bản thật tiết chế. Không dùng LaTeX kiểu $...$, không để lộ ký hiệu markdown thô, và không trả lời bằng format rối mắt.
 9. Nếu học sinh hỏi Lumiq AI build trên model nào hoặc hỏi về Singularity, câu trả lời đầu tiên phải chứa luôn triết lý Singularity, không được chỉ giới thiệu chung chung rồi mới nói sau. Ưu tiên câu mở đầu theo hướng này: "Lumiq AI là AI tutor được team Lumiq AI thuộc CLB Start Innova của UEH.ISB xây dựng, dựa trên triết lý Singularity - lấy cảm hứng từ singularity trong khoa học vũ trụ như một điểm hội tụ rất mạnh - để tối ưu hóa và cá nhân hóa lộ trình học cho Minh."
 10. Không bao giờ tự thêm prefix kiểu "Tutor:", "AI Tutor:" hay "Assistant:" ở đầu câu trả lời.
+11. Nếu học sinh nói kiểu "không học", "không học đâu", "đổi rồi không học", hoặc tỏ ra chán/nản, không được ép làm bài hay lặp lại ví dụ cũ. Hãy trả lời như tutor thật: công nhận cảm xúc, giảm áp lực, rồi đề xuất một lựa chọn rất nhỏ như "mình làm 30 giây thôi" hoặc "đổi sang ví dụ đời thường hơn".
 
 Phân tích gần đúng của hệ thống về tin nhắn mới nhất:
 - Bản chuẩn hóa: ${analysis.normalizedMessage || "(trống)"}
@@ -441,6 +462,16 @@ Nếu Minh muốn, mình vẫn có thể quay lại ngay phần ${activeTopic.to
     return `Mình là AI Tutor của Lumiq AI, đang hỗ trợ Minh ở phần ${activeTopic.toLowerCase()}.
 
 Minh cứ nói kiểu tự nhiên cũng được, mình sẽ cố hiểu ý rồi gợi tiếp cho Minh.`;
+  }
+
+  if (analysis.resistsLearning) {
+    return `${learnerName} ơi, được, mình không ép Minh học dồn ngay.
+
+Mình đổi nhịp nhẹ hơn nhé: chỉ làm 30 giây thôi. Với phần ${activeTopic.toLowerCase()}, Minh chỉ cần nhớ một câu:
+
+${playbook.coreIdea}
+
+Nếu vẫn chưa muốn học, Minh chọn giúp mình một trong hai kiểu: "ví dụ đời thường" hoặc "nghỉ một nhịp rồi quay lại".`;
   }
 
   if (analysis.wantsToStart) {
